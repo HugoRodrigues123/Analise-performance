@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Telemetria</title>
+  <link rel="stylesheet" href="style.css?v=20260507-03">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="controle-telemetria.js?v=20260507-01" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 3v18h18"></path><path d="m7 14 3-3 3 2 5-7"></path><path d="M18 6h3v3"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Controle de Telemetria</div>
+        <div class="topbar-sub">Monitoramento de dados de telemetria dos veículos</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Resumo da Telemetria</span>
+        <div class="actions-row">
+          <button class="btn btn-sm" type="button" onclick="limparTelemetria()">Limpar</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarTelemetria()">Salvar Registro</button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="metric-card">
+          <div class="metric-lbl">Registros</div>
+          <div class="metric-val"><span id="tel-kpi-total">0</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Média de Consumo</div>
+          <div class="metric-val"><span id="tel-kpi-media">—</span><span class="metric-unit"> km/L</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Pressão Agressiva</div>
+          <div class="metric-val"><span id="tel-kpi-agressivo">—</span><span class="metric-unit"> %</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Registro de Telemetria</span>
+      </div>
+
+      <div class="grid4">
+        <div class="field">
+          <label for="tel-data">Data</label>
+          <input type="date" id="tel-data">
+        </div>
+        <div class="field">
+          <label for="tel-motorista">Motorista</label>
+          <select id="tel-motorista"></select>
+        </div>
+        <div class="field">
+          <label for="tel-placa">Placa</label>
+          <select id="tel-placa"></select>
+        </div>
+        <div class="field">
+          <label for="tel-trajeto">Trajeto</label>
+          <input type="text" id="tel-trajeto" placeholder="Origem - Destino">
+        </div>
+      </div>
+
+      <div class="grid4 spaced">
+        <div class="field">
+          <label for="tel-deslocamento">Deslocamento</label>
+          <input type="number" id="tel-deslocamento" min="0" step="0.1" placeholder="km">
+        </div>
+        <div class="field">
+          <label for="tel-consumo">Consumo</label>
+          <input type="number" id="tel-consumo" min="0" step="0.1" placeholder="litros">
+        </div>
+        <div class="field">
+          <label for="tel-gobrax">Nota Gobrax</label>
+          <input type="number" id="tel-gobrax" min="0" max="100" step="1" placeholder="0 a 100">
+        </div>
+        <div class="field">
+          <label for="tel-criticidade">Criticidade do Trajeto</label>
+          <select id="tel-criticidade">
+            <option value="Bom">Bom</option>
+            <option value="Médio">Médio</option>
+            <option value="Crítico">Crítico</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="font-size:13px;color:var(--text2);margin:16px 0 8px;font-weight:600">
+        Pressão do pedal do acelerador
+      </div>
+      <div class="grid3">
+        <div class="field">
+          <label for="tel-pedal-ideal">Ideal</label>
+          <input type="number" id="tel-pedal-ideal" min="0" max="100" step="1" placeholder="%">
+        </div>
+        <div class="field">
+          <label for="tel-pedal-medio">Médio</label>
+          <input type="number" id="tel-pedal-medio" min="0" max="100" step="1" placeholder="%">
+        </div>
+        <div class="field">
+          <label for="tel-pedal-agressivo">Agressivo</label>
+          <input type="number" id="tel-pedal-agressivo" min="0" max="100" step="1" placeholder="%">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Histórico de Telemetria</span>
+        <input type="text" id="tel-busca" class="search-compact" placeholder="Buscar por placa, motorista, data ou trajeto" oninput="renderizarTelemetria()">
+      </div>
+      <div id="telemetria-lista" class="ops-list">
+        <div class="hist-empty">Nenhum registro de telemetria salvo.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+

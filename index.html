@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Análise de Performance - Frota</title>
-  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <link rel="stylesheet" href="style.css?v=20260507-03">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="comum.js?v=20260506-14" defer></script>
@@ -22,8 +22,6 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-sm" type="button" onclick="limparForm()">Limpar</button>
-      <button class="btn btn-sm" type="button" onclick="salvarRegistro()">Salvar Registro</button>
       <a class="btn btn-sm" href="index.html">Performance</a>
       <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
       <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
@@ -35,11 +33,6 @@
       <a class="btn btn-sm" href="avarias.html">Avarias</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
       <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
-      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Excel</button>
-      <button class="btn btn-sm btn-blue" type="button" onclick="exportarBackup()">Exportar Backup</button>
-      <button class="btn btn-sm" type="button" onclick="document.getElementById('backup-import').click()">Importar Backup</button>
-      <input type="file" id="backup-import" class="file-hidden" accept=".json" onchange="importarBackup(event)">
-      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
     </div>
   </div>
 
@@ -390,6 +383,8 @@
   </div>
 </body>
 </html>
+
+
 
 
 
