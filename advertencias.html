@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advertencias e Suspensoes - Frota</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="advertencias.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.34 19a10 10 0 1 1 17.32 0"></path><path d="m12 14 4-4"></path><path d="M7 19h10"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Advertencias e Suspensoes</div>
+        <div class="topbar-sub">Controle disciplinar e acompanhamento de ocorrencias</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Exportar Excel</button>
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Advertencias e Suspensoes</span>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarAdvertencia()">Registrar Ocorrencia</button>
+      </div>
+      <div class="ops-grid">
+        <div class="field">
+          <label for="adv-data">Data</label>
+          <input type="date" id="adv-data">
+        </div>
+        <div class="field">
+          <label for="adv-motorista">Motorista</label>
+          <div class="field-action">
+            <select id="adv-motorista"></select>
+            <button class="btn btn-sm" type="button" onclick="cadastrarMotorista()">Novo</button>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('adv-motorista')">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="adv-placa">Placa</label>
+          <div class="field-action">
+            <select id="adv-placa"></select>
+            <button class="btn btn-sm" type="button" onclick="cadastrarVeiculoPrompt()">Cadastrar</button>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirVeiculoSelecionado('adv-placa')">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="adv-tipo">Tipo</label>
+          <select id="adv-tipo">
+            <option value="Advertencia verbal">Advertencia verbal</option>
+            <option value="Advertencia escrita">Advertencia escrita</option>
+            <option value="Suspensao">Suspensao</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="adv-dias">Dias de suspensao</label>
+          <input type="number" id="adv-dias" min="0" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="adv-status">Status</label>
+          <select id="adv-status">
+            <option value="Em aberto">Em aberto</option>
+            <option value="Aplicada">Aplicada</option>
+            <option value="Concluida">Concluida</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+        </div>
+      </div>
+      <div class="field spaced">
+        <label for="adv-motivo">Motivo / Descricao</label>
+        <textarea id="adv-motivo" placeholder="Descreva o motivo, orientacoes dadas e responsaveis..."></textarea>
+      </div>
+      <div id="advertencias-lista" class="ops-list"></div>
+    </section>
+  </main>
+  <div class="modal-backdrop" id="motorista-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="motorista-modal-title">
+      <div class="card-header">
+        <span class="card-title" id="motorista-modal-title">Cadastro de Motorista</span>
+        <button class="btn btn-sm" type="button" onclick="fecharModalMotorista()">Fechar</button>
+      </div>
+      <div class="field">
+        <label for="motorista-novo-nome">Nome do motorista</label>
+        <input type="text" id="motorista-novo-nome" placeholder="Ex: Joao Silva">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-sm" type="button" onclick="fecharModalMotorista()">Cancelar</button>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarMotoristaModal()">Salvar</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="veiculo-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="veiculo-modal-title">
+      <div class="card-header"><span class="card-title" id="veiculo-modal-title">Cadastro de Placa</span><button class="btn btn-sm" type="button" onclick="fecharModalVeiculo()">Fechar</button></div>
+      <div class="grid2">
+        <div class="field"><label for="veiculo-nova-placa">Placa</label><input type="text" id="veiculo-nova-placa" placeholder="Ex: ELU2629"></div>
+        <div class="field"><label for="veiculo-novo-fab">Fabricante</label><select id="veiculo-novo-fab" onchange="atualizarModelosModalVeiculo()"></select></div>
+        <div class="field"><label for="veiculo-novo-modelo">Modelo</label><select id="veiculo-novo-modelo"></select></div>
+        <div class="field"><label for="veiculo-novo-ano">Ano</label><input type="number" id="veiculo-novo-ano" min="1990" max="2035" value="2022"></div>
+        <div class="field"><label for="veiculo-novo-tracao">Tracao</label><select id="veiculo-novo-tracao"><option value="6x2">6x2</option><option value="6x4">6x4</option><option value="4x2">4x2</option><option value="8x2">8x2</option><option value="8x4">8x4</option></select></div>
+      </div>
+      <div class="modal-actions"><button class="btn btn-sm" type="button" onclick="fecharModalVeiculo()">Cancelar</button><button class="btn btn-sm btn-green" type="button" onclick="salvarVeiculoModal()">Salvar</button></div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

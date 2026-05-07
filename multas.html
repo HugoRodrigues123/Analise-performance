@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Multas - Frota</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="multas.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.34 19a10 10 0 1 1 17.32 0"></path><path d="m12 14 4-4"></path><path d="M7 19h10"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Controle de Multas</div>
+        <div class="topbar-sub">Gestao de AIT, status e tratativas</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm" type="button" onclick="document.getElementById('multas-import').click()">Importar Planilha</button>
+      <button class="btn btn-sm" type="button" onclick="baixarModeloMultas()">Baixar Modelo</button>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Exportar Excel</button>
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+      <input type="file" id="multas-import" class="file-hidden" accept=".xlsx,.xls,.csv,.tsv,.json" onchange="importarPlanilhaMultas(event)">
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Controle de Multas</span>
+        <div class="actions-row">
+          <button class="btn btn-sm" type="button" onclick="limparFormularioMulta()">Limpar Formulario</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarMulta()" id="multa-salvar-btn">Registrar Multa</button>
+        </div>
+      </div>
+      <input type="hidden" id="multa-edit-id">
+      <div class="grid3">
+        <div class="field">
+          <label for="multas-online-modo">Modo online</label>
+          <select id="multas-online-modo">
+            <option value="google">Google Sheets publicado CSV</option>
+            <option value="excel">Excel / OneDrive publico</option>
+            <option value="sharepoint">SharePoint / OneDrive publico</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="multas-online-url">URL da planilha online</label>
+          <input type="text" id="multas-online-url" placeholder="Cole o link publico da planilha">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn btn-sm btn-green" type="button" onclick="sincronizarMultasOnline()">Sincronizar Online</button>
+          <button class="btn btn-sm" type="button" onclick="abrirDownloadPlanilhaOnline()">Abrir Download</button>
+          <button class="btn btn-sm btn-blue" type="button" onclick="abrirSharePointManual()">Abrir SharePoint</button>
+        </div>
+      </div>
+      <div class="field spaced">
+        <label for="multas-csv-texto">Importacao alternativa CSV/TSV</label>
+        <textarea id="multas-csv-texto" placeholder="Cole aqui os dados copiados da planilha, incluindo o cabecalho. Use quando o SharePoint bloquear a sincronizacao online."></textarea>
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-sm" type="button" onclick="importarTextoMultas()">Importar Texto Colado</button>
+        <button class="btn btn-sm" type="button" onclick="document.getElementById('multas-csv-texto').value=''">Limpar Texto</button>
+      </div>
+      <div class="grid2 upload-sheet-row" id="multas-aba-row" hidden>
+        <div class="field">
+          <label for="multas-aba">Aba da planilha</label>
+          <select id="multas-aba" onchange="selecionarAbaMultas()"></select>
+        </div>
+        <div class="field">
+          <label>Status da importacao</label>
+          <input type="text" id="multas-import-status" readonly>
+        </div>
+      </div>
+      <div class="sheet-tabs" id="multas-abas-botoes" hidden></div>
+      <div class="ops-grid">
+        <div class="field">
+          <label for="multa-data">Data</label>
+          <input type="date" id="multa-data">
+        </div>
+        <div class="field">
+          <label for="multa-hora">Hora</label>
+          <input type="time" id="multa-hora">
+        </div>
+        <div class="field">
+          <label for="multa-motorista">Motorista</label>
+          <div class="field-action">
+            <select id="multa-motorista"></select>
+            <button class="btn btn-sm" type="button" onclick="cadastrarMotorista()">Novo</button>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('multa-motorista')">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="multa-placa">Placa</label>
+          <div class="field-action">
+            <select id="multa-placa"></select>
+            <button class="btn btn-sm" type="button" onclick="cadastrarVeiculoPrompt()">Cadastrar</button>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirVeiculoSelecionado('multa-placa')">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="multa-ait">AIT</label>
+          <input type="text" id="multa-ait" placeholder="Ex: A123456789">
+        </div>
+        <div class="field">
+          <label for="multa-cidade">Cidade</label>
+          <input type="text" id="multa-cidade" list="multa-cidade-lista" placeholder="Ex: Sao Paulo">
+          <datalist id="multa-cidade-lista"></datalist>
+        </div>
+        <div class="field">
+          <label for="multa-estado">Estado</label>
+          <input type="text" id="multa-estado" list="multa-estado-lista" maxlength="2" placeholder="Ex: SP">
+          <datalist id="multa-estado-lista"></datalist>
+        </div>
+        <div class="field">
+          <label for="multa-valor">Valor (R$)</label>
+          <input type="number" id="multa-valor" list="multa-valor-lista" min="0" step="0.01" placeholder="Ex: 195.23">
+          <datalist id="multa-valor-lista"></datalist>
+        </div>
+        <div class="field">
+          <label for="multa-status">Status</label>
+          <select id="multa-status">
+            <option value="Pendente Identificacao">Pendente Identificacao</option>
+            <option value="Aguardando Retorno">Aguardando Retorno</option>
+            <option value="Aguardando Assinatura">Aguardando Assinatura</option>
+            <option value="Assinado">Assinado</option>
+            <option value="Recusado">Recusado</option>
+            <option value="Empresa">Empresa</option>
+            <option value="Recurso Tacografo">Recurso Tacografo</option>
+          </select>
+        </div>
+      </div>
+      <div class="field spaced">
+        <label for="multa-infracao">Descricao da infracao</label>
+        <select id="multa-infracao"></select>
+      </div>
+      <div class="field spaced">
+        <label for="multa-descricao">Observacoes / tratativas</label>
+        <textarea id="multa-descricao" placeholder="Registre orgao autuador, pontos, condutor indicado, retorno, assinatura, recurso e demais tratativas..."></textarea>
+      </div>
+      <div class="actions-row spaced">
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarMulta()" id="multa-salvar-form-btn">Salvar Multa</button>
+        <button class="btn btn-sm" type="button" onclick="limparFormularioMulta()">Limpar Formulario</button>
+      </div>
+      <hr class="divider">
+      <div class="card-header">
+        <span class="card-title">Busca de Multas</span>
+        <div class="actions-row">
+          <button class="btn btn-sm" type="button" onclick="limparBuscaMultas()">Limpar Busca</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="novaMultaBusca()">Incluir Multa</button>
+        </div>
+      </div>
+      <div class="ops-grid">
+        <div class="field"><label for="busca-multa-ait">AIT</label><input type="text" id="busca-multa-ait" oninput="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-valor">Valor</label><input type="text" id="busca-multa-valor" list="multa-valor-lista" oninput="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-cidade">Cidade</label><input type="text" id="busca-multa-cidade" list="multa-cidade-lista" oninput="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-motorista">Motorista</label><input type="text" id="busca-multa-motorista" oninput="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-data">Data</label><input type="date" id="busca-multa-data" onchange="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-estado">Estado</label><input type="text" id="busca-multa-estado" list="multa-estado-lista" maxlength="2" oninput="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-placa">Placa</label><input type="text" id="busca-multa-placa" oninput="renderizarMultas()"></div>
+        <div class="field"><label for="busca-multa-hora">Hora</label><input type="time" id="busca-multa-hora" onchange="renderizarMultas()"></div>
+        <div class="field">
+          <label for="busca-multa-descricao">Descricao</label>
+          <input type="text" id="busca-multa-descricao" list="multa-descricao-lista" oninput="renderizarMultas()">
+          <datalist id="multa-descricao-lista"></datalist>
+        </div>
+      </div>
+      <div class="inline-edit-panel spaced" id="busca-multa-edicao" hidden>
+        <div class="card-header">
+          <span class="card-title" id="busca-multa-edicao-titulo">Editar multa selecionada</span>
+          <div class="actions-row">
+            <button class="btn btn-sm" type="button" onclick="limparEdicaoMultaBusca()">Cancelar</button>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarEdicaoMultaBusca()" id="busca-multa-edicao-salvar">Salvar Alteracoes</button>
+          </div>
+        </div>
+        <input type="hidden" id="busca-multa-edit-id">
+        <div class="ops-grid">
+          <div class="field"><label for="busca-edit-multa-data">Data</label><input type="date" id="busca-edit-multa-data"></div>
+          <div class="field"><label for="busca-edit-multa-hora">Hora</label><input type="time" id="busca-edit-multa-hora"></div>
+          <div class="field">
+            <label for="busca-edit-multa-motorista">Motorista</label>
+            <select id="busca-edit-multa-motorista"></select>
+          </div>
+          <div class="field">
+            <label for="busca-edit-multa-placa">Placa</label>
+            <select id="busca-edit-multa-placa"></select>
+          </div>
+          <div class="field"><label for="busca-edit-multa-ait">AIT</label><input type="text" id="busca-edit-multa-ait"></div>
+          <div class="field"><label for="busca-edit-multa-cidade">Cidade</label><input type="text" id="busca-edit-multa-cidade" list="multa-cidade-lista"></div>
+          <div class="field"><label for="busca-edit-multa-estado">Estado</label><input type="text" id="busca-edit-multa-estado" list="multa-estado-lista" maxlength="2"></div>
+          <div class="field"><label for="busca-edit-multa-valor">Valor (R$)</label><input type="number" id="busca-edit-multa-valor" list="multa-valor-lista" min="0" step="0.01"></div>
+          <div class="field">
+            <label for="busca-edit-multa-status">Status</label>
+            <select id="busca-edit-multa-status">
+              <option value="Pendente Identificacao">Pendente Identificacao</option>
+              <option value="Aguardando Retorno">Aguardando Retorno</option>
+              <option value="Aguardando Assinatura">Aguardando Assinatura</option>
+              <option value="Assinado">Assinado</option>
+              <option value="Recusado">Recusado</option>
+              <option value="Empresa">Empresa</option>
+              <option value="Recurso Tacografo">Recurso Tacografo</option>
+            </select>
+          </div>
+        </div>
+        <div class="field spaced">
+          <label for="busca-edit-multa-infracao">Descricao da infracao</label>
+          <select id="busca-edit-multa-infracao"></select>
+        </div>
+        <div class="field spaced">
+          <label for="busca-edit-multa-descricao">Observacoes / tratativas</label>
+          <textarea id="busca-edit-multa-descricao"></textarea>
+        </div>
+      </div>
+      <div id="multas-lista" class="ops-list"></div>
+    </section>
+  </main>
+  <div class="modal-backdrop" id="motorista-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="motorista-modal-title">
+      <div class="card-header">
+        <span class="card-title" id="motorista-modal-title">Cadastro de Motorista</span>
+        <button class="btn btn-sm" type="button" onclick="fecharModalMotorista()">Fechar</button>
+      </div>
+      <div class="field">
+        <label for="motorista-novo-nome">Nome do motorista</label>
+        <input type="text" id="motorista-novo-nome" placeholder="Ex: Joao Silva">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-sm" type="button" onclick="fecharModalMotorista()">Cancelar</button>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarMotoristaModal()">Salvar</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="veiculo-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="veiculo-modal-title">
+      <div class="card-header">
+        <span class="card-title" id="veiculo-modal-title">Cadastro de Placa</span>
+        <button class="btn btn-sm" type="button" onclick="fecharModalVeiculo()">Fechar</button>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="veiculo-nova-placa">Placa</label><input type="text" id="veiculo-nova-placa" placeholder="Ex: ELU2629"></div>
+        <div class="field"><label for="veiculo-novo-fab">Fabricante</label><select id="veiculo-novo-fab" onchange="atualizarModelosModalVeiculo()"></select></div>
+        <div class="field"><label for="veiculo-novo-modelo">Modelo</label><select id="veiculo-novo-modelo"></select></div>
+        <div class="field"><label for="veiculo-novo-ano">Ano</label><input type="number" id="veiculo-novo-ano" min="1990" max="2035" value="2022"></div>
+        <div class="field"><label for="veiculo-novo-tracao">Tracao</label><select id="veiculo-novo-tracao"><option value="6x2">6x2</option><option value="6x4">6x4</option><option value="4x2">4x2</option><option value="8x2">8x2</option><option value="8x4">8x4</option></select></div>
+      </div>
+      <div class="modal-actions"><button class="btn btn-sm" type="button" onclick="fecharModalVeiculo()">Cancelar</button><button class="btn btn-sm btn-green" type="button" onclick="salvarVeiculoModal()">Salvar</button></div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

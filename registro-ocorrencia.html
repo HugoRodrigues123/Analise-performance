@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Ocorrência - Frota</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="registro-ocorrencia.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Registro de Ocorrência</div>
+        <div class="topbar-sub">Boletins, veículos, local e anexos</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Exportar Excel</button>
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Registro de Ocorrência</span>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarOcorrencia()">Salvar Ocorrência</button>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label for="ocorrencia-id">ID da ocorrência</label>
+          <input type="text" id="ocorrencia-id" readonly placeholder="Gerado automaticamente">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-boletim">Número do boletim de ocorrência</label>
+          <input type="text" id="ocorrencia-boletim" placeholder="Ex: BO-2026-001245">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-data">Data</label>
+          <input type="date" id="ocorrencia-data">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-hora">Hora</label>
+          <input type="time" id="ocorrencia-hora">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-placa-cavalo">Placa cavalo</label>
+          <select id="ocorrencia-placa-cavalo"></select>
+        </div>
+        <div class="field">
+          <label for="ocorrencia-placa-carreta">Placa carreta</label>
+          <select id="ocorrencia-placa-carreta"></select>
+        </div>
+        <div class="field">
+          <label for="ocorrencia-produto">Produto</label>
+          <input type="text" id="ocorrencia-produto" placeholder="Ex: Soja, combustível, carga seca">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-cliente">Cliente carregamento</label>
+          <input type="text" id="ocorrencia-cliente" placeholder="Ex: Cliente / unidade de carregamento">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-local">Local da ocorrência</label>
+          <input type="text" id="ocorrencia-local" placeholder="Cidade/UF, rodovia, pátio ou cliente">
+        </div>
+      </div>
+
+      <div class="field spaced">
+        <label for="ocorrencia-descricao">Descrição</label>
+        <textarea id="ocorrencia-descricao" placeholder="Descreva o ocorrido, envolvidos, providências e observações..."></textarea>
+      </div>
+
+      <div class="upload-panel">
+        <label class="upload-drop" for="ocorrencia-anexos">
+          <span class="upload-icon">+</span>
+          <span>
+            <strong>Anexar imagens ou vídeos</strong><br>
+            <small>Selecione fotos, evidências ou vídeos relacionados à ocorrência.</small>
+          </span>
+          <span class="btn btn-sm" type="button">Selecionar</span>
+        </label>
+        <input type="file" id="ocorrencia-anexos" class="file-hidden" accept="image/*,video/*" multiple onchange="prepararAnexosOcorrencia(event)">
+        <div class="ops-summary" id="ocorrencia-anexos-status">Nenhum anexo selecionado.</div>
+      </div>
+
+      <div class="inline-edit-panel spaced">
+        <div class="card-header"><span class="card-title">Histórico de Ocorrências</span></div>
+        <div id="ocorrencias-lista" class="ops-list cad-scroll-list"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+
+

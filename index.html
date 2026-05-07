@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análise de Performance - Frota</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="index.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.34 19a10 10 0 1 1 17.32 0"></path><path d="m12 14 4-4"></path><path d="M7 19h10"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Análise de Performance</div>
+        <div class="topbar-sub">Controle de Eficiência de Frota</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-sm" type="button" onclick="limparForm()">Limpar</button>
+      <button class="btn btn-sm" type="button" onclick="salvarRegistro()">Salvar Registro</button>
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Excel</button>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarBackup()">Exportar Backup</button>
+      <button class="btn btn-sm" type="button" onclick="document.getElementById('backup-import').click()">Importar Backup</button>
+      <input type="file" id="backup-import" class="file-hidden" accept=".json" onchange="importarBackup(event)">
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Identificacao do Veiculo</span>
+      </div>
+      <div class="grid4">
+        <div class="field">
+          <label for="motorista-cadastro">Motorista</label>
+          <div class="field-action">
+            <select id="motorista-cadastro"></select>
+            <button class="btn btn-sm" type="button" onclick="cadastrarMotorista()">Novo</button>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('motorista-cadastro')">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="placa-cadastro">Placa</label>
+          <div class="field-action">
+            <select id="placa-cadastro" onchange="carregarVeiculoPorPlaca()"></select>
+            <button class="btn btn-sm" type="button" onclick="cadastrarVeiculoAtual()">Cadastrar</button>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirVeiculoSelecionado('placa-cadastro')">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fab">Fabricante</label>
+          <select id="fab" onchange="atualizarModelos()"></select>
+        </div>
+        <div class="field">
+          <label for="modelo">Modelo</label>
+          <select id="modelo" onchange="calcular()"></select>
+        </div>
+        <div class="field">
+          <label for="ano">Ano</label>
+          <input type="number" id="ano" value="2022" min="1990" max="2035" oninput="calcular()">
+        </div>
+        <div class="field">
+          <label for="tracao">Tracao</label>
+          <select id="tracao" onchange="calcular()">
+            <option value="6x2">6x2</option>
+            <option value="6x4">6x4</option>
+            <option value="4x2">4x2</option>
+            <option value="8x2">8x2</option>
+            <option value="8x4">8x4</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint">Busque uma placa cadastrada para preencher fabricante, modelo, ano e tracao automaticamente. Para cadastrar uma placa, preencha estes campos e clique em Cadastrar.</div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Comportamento de Conducao</span>
+        <span class="badge" id="nota-badge">Nota Gobrax: 70</span>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-top"><span class="slider-name">Tempo em faixa verde (RPM economico)</span></div>
+        <div class="slider-input-row">
+          <input type="range" class="green-track" id="faixaVerde" min="0" max="100" value="70" step="1" oninput="syncFromSlider('faixaVerde','ni-fg'); calcular()">
+          <input type="number" class="num-input c-green" id="ni-fg" min="0" max="100" value="70" oninput="syncFromInput('ni-fg','faixaVerde'); calcular()" aria-label="Faixa verde em porcentagem">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-top"><span class="slider-name">Tempo em embalo (motor desacoplado / freio motor)</span></div>
+        <div class="slider-input-row">
+          <input type="range" class="green-track" id="embalo" min="0" max="100" value="25" step="1" oninput="syncFromSlider('embalo','ni-em'); calcular()">
+          <input type="number" class="num-input c-green" id="ni-em" min="0" max="100" value="25" oninput="syncFromInput('ni-em','embalo'); calcular()" aria-label="Embalo em porcentagem">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="section-note">Distribuicao da aceleracao (ideal + mediano + critico = 100%)</div>
+      <div class="accel-bar" id="accel-bar">
+        <div id="bar-ideal" style="background:#1D9E75"><span id="bar-ideal-txt"></span></div>
+        <div id="bar-med" style="background:#EF9F27"><span id="bar-med-txt"></span></div>
+        <div id="bar-crit" style="background:#E24B4A"><span id="bar-crit-txt"></span></div>
+      </div>
+      <div class="accel-legend">
+        <span><i class="dot" style="background:#1D9E75"></i>Ideal</span>
+        <span><i class="dot" style="background:#EF9F27"></i>Mediano</span>
+        <span><i class="dot" style="background:#E24B4A"></i>Critico</span>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-top"><span class="slider-name">Aceleracao ideal</span></div>
+        <div class="slider-input-row">
+          <input type="range" class="green-track" id="acIdeal" min="0" max="100" value="60" step="1" oninput="syncFromSlider('acIdeal','ni-id'); calcular()">
+          <input type="number" class="num-input c-green" id="ni-id" min="0" max="100" value="60" oninput="syncFromInput('ni-id','acIdeal'); calcular()" aria-label="Aceleracao ideal">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-top"><span class="slider-name">Aceleracao mediana</span></div>
+        <div class="slider-input-row">
+          <input type="range" class="amber-track" id="acMed" min="0" max="100" value="30" step="1" oninput="syncFromSlider('acMed','ni-md'); calcular()">
+          <input type="number" class="num-input c-amber" id="ni-md" min="0" max="100" value="30" oninput="syncFromInput('ni-md','acMed'); calcular()" aria-label="Aceleracao mediana">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-top"><span class="slider-name">Aceleracao critica</span></div>
+        <div class="slider-input-row">
+          <input type="range" class="red-track" id="acCrit" min="0" max="100" value="10" step="1" oninput="syncFromSlider('acCrit','ni-cr'); calcular()">
+          <input type="number" class="num-input c-red" id="ni-cr" min="0" max="100" value="10" oninput="syncFromInput('ni-cr','acCrit'); calcular()" aria-label="Aceleracao critica">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="warn-box" id="accel-warn">A soma da aceleracao esta em <span id="soma-val">100</span>%. Ajuste para totalizar 100%.</div>
+
+      <hr class="divider">
+
+      <div class="grid2">
+        <div class="field">
+          <label for="desloc">Deslocamento real (km)</label>
+          <input type="number" id="desloc" min="0" step="10" placeholder="Ex: 5200" oninput="calcular()">
+        </div>
+        <div class="field">
+          <label for="consumo">Consumo real (litros)</label>
+          <input type="number" id="consumo" min="0" step="10" placeholder="Ex: 1980" oninput="calcular()">
+        </div>
+      </div>
+      <div class="grid2 spaced">
+        <div class="field">
+          <label for="trajeto-registro">Trajeto</label>
+          <select id="trajeto-registro" onchange="calcular()"></select>
+        </div>
+        <div class="field">
+          <label for="km-carregado">Km carregado</label>
+          <input type="number" id="km-carregado" min="0" step="10" placeholder="Ex: 4200" oninput="calcular()">
+        </div>
+      </div>
+      <div class="hint">A media de consumo e calculada por deslocamento real dividido pelo consumo real.</div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Problemas Mecanicos</span>
+        <span class="muted">Selecione os problemas identificados</span>
+      </div>
+      <div class="mech-grid" id="mech-grid"></div>
+      <div class="mech-total" id="mech-total"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Observacoes e Diagnostico</span>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarRegistro()">Salvar no Historico</button>
+      </div>
+      <div class="grid3">
+        <div class="field">
+          <label for="obs-data">Data</label>
+          <input type="date" id="obs-data">
+        </div>
+      </div>
+      <div class="field spaced">
+        <label for="obs-texto">Observacoes / Diagnostico</label>
+        <textarea id="obs-texto" placeholder="Registre analises, diagnosticos, acoes tomadas..."></textarea>
+      </div>
+      <input type="hidden" id="edit-id">
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Resultado da Simulacao</span>
+        <span id="res-data" class="muted"></span>
+      </div>
+      <div class="result-panel">
+        <div class="gauge-wrap">
+          <svg id="gauge-svg" width="150" height="100" viewBox="0 0 150 100" role="img" aria-label="Media estimada">
+            <defs>
+              <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#E24B4A"></stop>
+                <stop offset="35%" stop-color="#EF9F27"></stop>
+                <stop offset="70%" stop-color="#1D9E75"></stop>
+                <stop offset="100%" stop-color="#0F6E56"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M18 88 A57 57 0 0 1 132 88" fill="none" stroke="rgba(128,128,128,.15)" stroke-width="10" stroke-linecap="round"></path>
+            <path id="gauge-arc" d="M18 88 A57 57 0 0 1 132 88" fill="none" stroke="url(#gauge-grad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="180" stroke-dashoffset="180"></path>
+            <line id="gauge-needle" x1="75" y1="88" x2="75" y2="38" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90,75,88)"></line>
+            <circle cx="75" cy="88" r="5" fill="var(--text)"></circle>
+            <text x="14" y="98" font-size="9" fill="var(--text2)" font-family="inherit">0</text>
+            <text x="68" y="20" font-size="9" fill="var(--text2)" font-family="inherit" text-anchor="middle">2.5</text>
+            <text x="124" y="98" font-size="9" fill="var(--text2)" font-family="inherit">5+</text>
+            <text id="gauge-num" x="75" y="78" font-size="22" font-weight="700" fill="var(--text)" text-anchor="middle" font-family="inherit">-</text>
+          </svg>
+          <span class="gauge-label">km/L estimado</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-lbl">Media</div><div class="metric-val"><span id="res-media">-</span><span class="metric-unit">km/L</span></div></div>
+          <div class="metric-card"><div class="metric-lbl">Nota Gobrax est.</div><div class="metric-val"><span id="res-nota">-</span><span class="metric-unit">/100</span></div></div>
+          <div class="metric-card"><div class="metric-lbl">Classificacao</div><div class="metric-val compact"><span id="res-rating">-</span></div></div>
+          <div class="metric-card"><div class="metric-lbl">Deslocamento</div><div class="metric-val"><span id="res-desloc">-</span><span class="metric-unit">km</span></div></div>
+          <div class="metric-card"><div class="metric-lbl">Consumo</div><div class="metric-val"><span id="res-consumo">-</span><span class="metric-unit">L</span></div></div>
+          <div class="metric-card"><div class="metric-lbl">Estimativa parametros</div><div class="metric-val"><span id="res-base">-</span><span class="metric-unit">km/L</span></div></div>
+          <div class="metric-card full"><div class="metric-lbl">Impacto mecanico</div><div id="res-mech" class="metric-text">Nenhum problema registrado</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Dashboard de Performance</span>
+      </div>
+      <div class="dashboard-grid kpis">
+        <div class="metric-card"><div class="metric-lbl">Media Geral Frota</div><div class="metric-val"><span id="kpi-media-geral">-</span><span class="metric-unit">km/L</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">Nota Media Gobrax</div><div class="metric-val"><span id="kpi-nota-geral">-</span><span class="metric-unit">/100</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">Registros Salvos</div><div class="metric-val"><span id="kpi-total-registros">0</span></div></div>
+      </div>
+      <div class="dashboard-grid charts">
+        <div class="chart-card">
+          <div class="card-header"><span class="card-title">Evolucao de Consumo</span></div>
+          <canvas id="graficoMedia"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="card-header"><span class="card-title">Falhas Mecanicas</span></div>
+          <canvas id="graficoProblemas"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Ranking de Motoristas</span>
+        <span class="muted">Pesos provisórios até definição final</span>
+      </div>
+      <div class="compare-controls">
+        <div class="field">
+          <label for="ranking-data-inicio">Data inicial</label>
+          <input type="date" id="ranking-data-inicio" onchange="atualizarRankingMotoristas()">
+        </div>
+        <div class="field">
+          <label for="ranking-data-fim">Data final</label>
+          <input type="date" id="ranking-data-fim" onchange="atualizarRankingMotoristas()">
+        </div>
+      </div>
+      <div id="ranking-motoristas" class="ops-list">
+        <div class="hist-empty">Salve registros para montar o ranking de motoristas.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Comparativo</span>
+      </div>
+      <div class="compare-controls">
+        <div class="field">
+          <label for="compare-a">Motorista ou veiculo A</label>
+          <select id="compare-a" onchange="atualizarComparativo()"></select>
+        </div>
+        <div class="field">
+          <label for="compare-b">Motorista ou veiculo B</label>
+          <select id="compare-b" onchange="atualizarComparativo()"></select>
+        </div>
+        <div class="field">
+          <label for="compare-data-inicio">Data inicial</label>
+          <input type="date" id="compare-data-inicio" onchange="atualizarComparativo()">
+        </div>
+        <div class="field">
+          <label for="compare-data-fim">Data final</label>
+          <input type="date" id="compare-data-fim" onchange="atualizarComparativo()">
+        </div>
+      </div>
+      <div class="compare-grid" id="compare-grid">
+        <div class="hist-empty">Salve ao menos dois registros para comparar motoristas ou veiculos.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Historico de Registros</span>
+        <div class="actions-row">
+          <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Exportar Excel</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">Exportar PDF</button>
+          <button class="btn btn-sm btn-red" type="button" onclick="limparHistorico()">Limpar Historico</button>
+        </div>
+      </div>
+      <div id="hist-lista">
+        <div class="hist-empty">Nenhum registro salvo ainda. Preencha os dados e clique em "Salvar Registro".</div>
+      </div>
+    </section>
+  </main>
+  <div class="modal-backdrop" id="motorista-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="motorista-modal-title">
+      <div class="card-header">
+        <span class="card-title" id="motorista-modal-title">Cadastro de Motorista</span>
+        <button class="btn btn-sm" type="button" onclick="fecharModalMotorista()">Fechar</button>
+      </div>
+      <div class="field">
+        <label for="motorista-novo-nome">Nome do motorista</label>
+        <input type="text" id="motorista-novo-nome" placeholder="Ex: Joao Silva">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-sm" type="button" onclick="fecharModalMotorista()">Cancelar</button>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarMotoristaModal()">Salvar</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="veiculo-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="veiculo-modal-title">
+      <div class="card-header">
+        <span class="card-title" id="veiculo-modal-title">Cadastro de Placa</span>
+        <button class="btn btn-sm" type="button" onclick="fecharModalVeiculo()">Fechar</button>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="veiculo-nova-placa">Placa</label>
+          <input type="text" id="veiculo-nova-placa" placeholder="Ex: ELU2629">
+        </div>
+        <div class="field">
+          <label for="veiculo-novo-fab">Fabricante</label>
+          <select id="veiculo-novo-fab" onchange="atualizarModelosModalVeiculo()"></select>
+        </div>
+        <div class="field">
+          <label for="veiculo-novo-modelo">Modelo</label>
+          <select id="veiculo-novo-modelo"></select>
+        </div>
+        <div class="field">
+          <label for="veiculo-novo-ano">Ano</label>
+          <input type="number" id="veiculo-novo-ano" min="1990" max="2035" value="2022">
+        </div>
+        <div class="field">
+          <label for="veiculo-novo-tracao">Tracao</label>
+          <select id="veiculo-novo-tracao">
+            <option value="6x2">6x2</option>
+            <option value="6x4">6x4</option>
+            <option value="4x2">4x2</option>
+            <option value="8x2">8x2</option>
+            <option value="8x4">8x4</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-sm" type="button" onclick="fecharModalVeiculo()">Cancelar</button>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarVeiculoModal()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

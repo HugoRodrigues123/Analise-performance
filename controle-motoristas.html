@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Motoristas</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="controle-motoristas.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 7v10"></path><path d="M15 11h8"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Controle de Motoristas</div>
+        <div class="topbar-sub">Disponibilidade, folgas, férias e atestados</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Excel</button>
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Controle de Motoristas</span>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarStatusMotorista()">Salvar Status</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="metric-card"><div class="metric-lbl">Disponíveis</div><div class="metric-val"><span id="mot-kpi-disponivel">0</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">De folga</div><div class="metric-val"><span id="mot-kpi-folga">0</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">De férias</div><div class="metric-val"><span id="mot-kpi-ferias">0</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">De atestado</div><div class="metric-val"><span id="mot-kpi-atestado">0</span></div></div>
+      </div>
+
+      <div class="inline-edit-panel spaced">
+        <div class="grid4">
+          <div class="field">
+            <label for="motorista-status-nome">Motorista</label>
+            <select id="motorista-status-nome"></select>
+          </div>
+          <div class="field">
+            <label for="motorista-status-situacao">Status</label>
+            <select id="motorista-status-situacao">
+              <option value="Disponivel">Disponível</option>
+              <option value="Folga">Folga</option>
+              <option value="Ferias">Férias</option>
+              <option value="Atestado">Atestado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="motorista-status-data">Data</label>
+            <input type="date" id="motorista-status-data">
+          </div>
+          <div class="field">
+            <label for="motorista-status-obs">Observação</label>
+            <input type="text" id="motorista-status-obs" placeholder="Ex: retorno previsto">
+          </div>
+        </div>
+      </div>
+
+      <div class="ops-grid spaced">
+        <div class="field">
+          <label for="motorista-status-busca">Buscar motorista</label>
+          <input type="text" id="motorista-status-busca" placeholder="Nome, status ou observação" oninput="renderizarControleMotoristas()">
+        </div>
+        <div class="field">
+          <label for="motorista-status-filtro">Filtrar status</label>
+          <select id="motorista-status-filtro" onchange="renderizarControleMotoristas()">
+            <option value="">Todos</option>
+            <option value="Disponivel">Disponível</option>
+            <option value="Folga">Folga</option>
+            <option value="Ferias">Férias</option>
+            <option value="Atestado">Atestado</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="motoristas-controle-lista" class="ops-list cad-scroll-list"></div>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS analise_performance
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE analise_performance;
+
+CREATE TABLE IF NOT EXISTS app_storage (
+  storage_key VARCHAR(80) NOT NULL PRIMARY KEY,
+  payload LONGTEXT NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CHECK (JSON_VALID(payload))
+);

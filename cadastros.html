@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastros</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="cadastros.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6"></path><path d="M22 11h-6"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Cadastros</div>
+        <div class="topbar-sub">Motoristas e veículos compartilhados</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Excel</button>
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card" id="cadastros-lista">
+      <div class="card-header">
+        <span class="card-title">Cadastros</span>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="metric-card">
+          <div class="metric-lbl">Motoristas cadastrados</div>
+          <div class="metric-val"><span id="cad-kpi-motoristas">0</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Veículos cadastrados</div>
+          <div class="metric-val"><span id="cad-kpi-veiculos">0</span></div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid charts">
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Cadastro de Motorista</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarMotoristaCadastro()">Salvar Motorista</button>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="cadastro-motorista-nome">Nome do motorista</label>
+              <input type="text" id="cadastro-motorista-nome" placeholder="Ex: João Silva">
+            </div>
+            <div class="field">
+              <label for="cadastro-motorista-select">Excluir cadastro</label>
+              <div class="field-action">
+                <select id="cadastro-motorista-select"></select>
+                <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('cadastro-motorista-select')">Excluir</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Cadastro de Veículo</span>
+            <div class="actions-row">
+              <button class="btn btn-sm" type="button" onclick="limparFormularioFrota()">Limpar</button>
+              <button class="btn btn-sm btn-green" type="button" onclick="salvarCadastroFrota()">Salvar Veículo</button>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="cadastro-placa-select">Buscar placa cadastrada</label>
+              <div class="field-action">
+                <select id="cadastro-placa-select" onchange="carregarVeiculoCadastro()"></select>
+                <button class="btn btn-sm btn-red" type="button" onclick="excluirVeiculoSelecionado('cadastro-placa-select')">Excluir</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="frota-placa">Placa</label>
+              <input type="text" id="frota-placa" placeholder="Ex: ELU2629">
+            </div>
+            <div class="field"><label for="frota-fab">Fabricante</label><select id="frota-fab" onchange="atualizarModelosFrota()"></select></div>
+            <div class="field"><label for="frota-modelo">Modelo</label><select id="frota-modelo"></select></div>
+            <div class="field"><label for="frota-ano">Ano</label><input type="number" id="frota-ano" min="1990" max="2035" value="2022"></div>
+            <div class="field"><label for="frota-tracao">Tração</label><select id="frota-tracao"><option value="6x2">6x2</option><option value="6x4">6x4</option><option value="4x2">4x2</option><option value="8x2">8x2</option><option value="8x4">8x4</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid charts">
+        <div class="inline-edit-panel">
+          <div class="card-header"><span class="card-title">Motoristas cadastrados</span></div>
+          <div class="field">
+            <label for="cad-busca-motorista">Buscar motorista</label>
+            <input type="text" id="cad-busca-motorista" placeholder="Digite para filtrar" oninput="renderizarCadastros()">
+          </div>
+          <div id="cad-lista-motoristas" class="ops-list cad-scroll-list"></div>
+        </div>
+        <div class="inline-edit-panel">
+          <div class="card-header"><span class="card-title">Veículos cadastrados</span></div>
+          <div class="field">
+            <label for="cad-busca-veiculo">Buscar veículo</label>
+            <input type="text" id="cad-busca-veiculo" placeholder="Placa, fabricante ou modelo" oninput="renderizarCadastros()">
+          </div>
+          <div id="cad-lista-veiculos" class="ops-list cad-scroll-list"></div>
+        </div>
+      </div>
+
+      <div class="inline-edit-panel spaced">
+        <div class="card-header">
+          <span class="card-title">Cadastro de Trajetos</span>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarTrajeto()">Salvar Trajeto</button>
+        </div>
+        <div class="ops-grid">
+          <div class="field">
+            <label for="trajeto-cliente-origem">Cliente Origem</label>
+            <input type="text" id="trajeto-cliente-origem" placeholder="Ex: Empresa A">
+          </div>
+          <div class="field">
+            <label for="trajeto-cliente-destino">Cliente Destino</label>
+            <input type="text" id="trajeto-cliente-destino" placeholder="Ex: Empresa B">
+          </div>
+          <div class="field">
+            <label for="trajeto-origem">Cidade Origem</label>
+            <input type="text" id="trajeto-origem" placeholder="Ex: CD Sao Paulo">
+          </div>
+          <div class="field">
+            <label for="trajeto-destino">Cidade Destino</label>
+            <input type="text" id="trajeto-destino" placeholder="Ex: Interior SP">
+          </div>
+          <div class="field">
+            <label for="trajeto-desempenho">Grau de desempenho</label>
+            <select id="trajeto-desempenho">
+              <option value="Bom">Bom</option>
+              <option value="Medio">Medio</option>
+              <option value="Critico">Critico</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="trajeto-carga">Condicao de carga</label>
+            <select id="trajeto-carga">
+              <option value="Carregado">Carregado</option>
+              <option value="Vazio">Vazio</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="trajeto-fab">Fabricante</label>
+            <select id="trajeto-fab" onchange="atualizarModelosTrajeto()"></select>
+          </div>
+          <div class="field">
+            <label for="trajeto-modelo">Modelo</label>
+            <select id="trajeto-modelo"></select>
+          </div>
+          <div class="field">
+            <label for="trajeto-media">Media simulada</label>
+            <input type="number" id="trajeto-media" min="0" step="0.01" placeholder="Ex: 2.75">
+          </div>
+          <div class="field">
+            <label for="trajeto-km-carregado">Km carregado padrao</label>
+            <input type="number" id="trajeto-km-carregado" min="0" step="10" placeholder="Ex: 4200">
+          </div>
+          <div class="field">
+            <label for="trajeto-pedal-ideal">Pedal ideal (%)</label>
+            <input type="number" id="trajeto-pedal-ideal" min="0" max="100" step="1" value="60">
+          </div>
+          <div class="field">
+            <label for="trajeto-pedal-medio">Pedal medio (%)</label>
+            <input type="number" id="trajeto-pedal-medio" min="0" max="100" step="1" value="30">
+          </div>
+          <div class="field">
+            <label for="trajeto-pedal-agressivo">Pedal agressivo (%)</label>
+            <input type="number" id="trajeto-pedal-agressivo" min="0" max="100" step="1" value="10">
+          </div>
+        </div>
+        <div id="trajetos-lista" class="ops-list"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

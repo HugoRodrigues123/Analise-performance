@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico - Frota</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="ofensores.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.34 19a10 10 0 1 1 17.32 0"></path><path d="m12 14 4-4"></path><path d="M7 19h10"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Diagnóstico</div>
+        <div class="topbar-sub">Analise de consumo por motorista, placa e veiculo</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm" type="button" onclick="atualizarDiagnosticoOfensores()">Atualizar</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card" id="diagnostico-ofensores">
+      <div class="card-header">
+        <span class="card-title">Diagnóstico</span>
+      </div>
+      <div class="upload-panel">
+        <div class="upload-drop">
+          <input type="file" id="diag-arquivo" class="file-hidden" accept=".xlsx,.xls,.csv,.tsv,.json" onchange="carregarArquivoOfensores(event)">
+          <div class="upload-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M17 8l-5-5-5 5"></path><path d="M12 3v12"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="upload-title">Carregar arquivo de dados</div>
+            <div class="upload-sub">Excel, CSV, TSV ou JSON</div>
+          </div>
+          <button class="btn btn-sm btn-green" type="button" onclick="document.getElementById('diag-arquivo').click()">Selecionar</button>
+        </div>
+        <div class="upload-actions">
+          <button class="btn btn-sm" type="button" onclick="limparArquivoOfensores()">Usar historico salvo</button>
+          <span class="muted" id="diag-arquivo-status">Nenhum arquivo carregado. Usando historico salvo do navegador.</span>
+        </div>
+        <div class="grid2 upload-sheet-row" id="diag-aba-row" hidden>
+          <div class="field">
+            <label for="diag-aba">Aba da planilha</label>
+            <select id="diag-aba" onchange="selecionarAbaOfensores()"></select>
+          </div>
+          <div class="field">
+            <label>Arquivo carregado</label>
+            <input type="text" id="diag-arquivo-nome" readonly>
+          </div>
+        </div>
+        <div class="sheet-tabs" id="diag-abas-botoes" hidden></div>
+      </div>
+      <div class="compare-controls">
+        <div class="field">
+          <label for="diag-metodo">Forma do diagnostico</label>
+          <select id="diag-metodo" onchange="atualizarDiagnosticoOfensores()">
+            <option value="completo">Completo: consumo, trajeto e pedal</option>
+            <option value="consumoGeral">Somente media geral da frota</option>
+            <option value="trajeto">Media por trajeto / rota</option>
+            <option value="pedal">Pressao do pedal do acelerador</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="diag-salvo">Diagnostico salvo</label>
+          <div class="field-action">
+            <select id="diag-salvo" onchange="carregarDiagnosticoSalvo()"></select>
+            <button class="btn btn-sm btn-red" type="button" onclick="excluirDiagnosticoSalvo()">Excluir</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="diag-data-inicio">Data inicial</label>
+          <input type="date" id="diag-data-inicio" onchange="atualizarDiagnosticoOfensores()">
+        </div>
+        <div class="field">
+          <label for="diag-data-fim">Data final</label>
+          <input type="date" id="diag-data-fim" onchange="atualizarDiagnosticoOfensores()">
+        </div>
+        <div class="field">
+          <label for="diag-agrupar">Agrupar por</label>
+          <select id="diag-agrupar" onchange="atualizarDiagnosticoOfensores()">
+            <option value="motorista">Motorista</option>
+            <option value="placa">Placa</option>
+            <option value="veiculo">Veiculo</option>
+            <option value="motoristaPlaca">Motorista + Placa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="diag-limite">Limite ofensivo</label>
+          <select id="diag-limite" onchange="atualizarDiagnosticoOfensores()">
+            <option value="abaixoMedia">Abaixo da media geral</option>
+            <option value="5">5% abaixo da media</option>
+            <option value="10">10% abaixo da media</option>
+            <option value="15">15% abaixo da media</option>
+          </select>
+        </div>
+      </div>
+      <div class="dashboard-grid kpis">
+        <div class="metric-card"><div class="metric-lbl">Media analisada</div><div class="metric-val"><span id="diag-media-geral">-</span><span class="metric-unit">km/L</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">Ofensores</div><div class="metric-val"><span id="diag-total-ofensores">0</span></div></div>
+        <div class="metric-card"><div class="metric-lbl">Perda estimada</div><div class="metric-val"><span id="diag-perda-media">-</span><span class="metric-unit">km/L</span></div></div>
+      </div>
+      <div id="diag-lista" class="ops-list">
+        <div class="ops-empty">Salve registros de consumo para diagnosticar ofensores.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

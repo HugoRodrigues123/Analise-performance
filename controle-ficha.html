@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Ficha</title>
+  <link rel="stylesheet" href="style.css?v=20260507-01">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comum.js?v=20260506-14" defer></script>
+  <script src="controle-ficha.js?v=20260506-14" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h6"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Controle de Ficha</div>
+        <div class="topbar-sub">Estoque e requisições operacionais</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="avarias.html">Avarias</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <button class="btn btn-sm btn-blue" type="button" onclick="exportarExcel()">Excel</button>
+      <button class="btn btn-sm btn-green" type="button" onclick="exportarPDF()">PDF</button>
+    </div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Controle de Ficha</span>
+      </div>
+
+      <div class="inline-edit-panel spaced">
+        <div class="card-header">
+          <span class="card-title">Estoque</span>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarEstoqueFicha()">Salvar Estoque</button>
+        </div>
+        <div class="grid3">
+          <div class="field"><label for="estoque-fichas">Fichas em Estoque</label><input type="number" id="estoque-fichas" min="0" step="1"></div>
+          <div class="field"><label for="estoque-discos">Discos de Tacógrafo em Estoque</label><input type="number" id="estoque-discos" min="0" step="1"></div>
+          <div class="field"><label for="estoque-bobinas">Bobinas em Estoque</label><input type="number" id="estoque-bobinas" min="0" step="1"></div>
+        </div>
+      </div>
+
+      <div class="inline-edit-panel spaced">
+        <div class="card-header">
+          <span class="card-title">Movimentação de Estoque</span>
+        </div>
+        <div class="ficha-mode-tabs" role="tablist" aria-label="Tipo de movimentação">
+          <button class="sheet-tab active" id="ficha-tab-requisicao" type="button" onclick="alternarMovimentacaoFicha('requisicao')">Requisição</button>
+          <button class="sheet-tab" id="ficha-tab-baixa" type="button" onclick="alternarMovimentacaoFicha('baixa')">Baixa</button>
+        </div>
+
+      <div class="dashboard-grid charts" id="ficha-mov-requisicao">
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Requisição de Ficha</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarRequisicaoFicha('ficha')">Salvar</button>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="ficha-identificador">Identificador automático</label><input type="text" id="ficha-identificador" readonly placeholder="Gerado ao salvar"></div>
+            <div class="field"><label for="ficha-data">Data da requisição</label><input type="date" id="ficha-data"></div>
+            <div class="field"><label for="ficha-quantidade">Quantidade</label><input type="number" id="ficha-quantidade" min="0" step="1"></div>
+            <div class="field">
+              <label for="ficha-unidade">Unidade de medida</label>
+              <select id="ficha-unidade">
+                <option value="Unidade">Unidade</option>
+                <option value="Caixa">Caixa</option>
+                <option value="Pacote">Pacote</option>
+                <option value="Bloco">Bloco</option>
+                <option value="Talão">Talão</option>
+                <option value="Kit">Kit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Requisição de Bobina</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarRequisicaoFicha('bobina')">Salvar</button>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="bobina-identificador">Identificador automático</label><input type="text" id="bobina-identificador" readonly placeholder="Gerado ao salvar"></div>
+            <div class="field"><label for="bobina-data">Data da requisição</label><input type="date" id="bobina-data"></div>
+            <div class="field"><label for="bobina-quantidade">Quantidade</label><input type="number" id="bobina-quantidade" min="0" step="1"></div>
+            <div class="field">
+              <label for="bobina-unidade">Unidade de medida</label>
+              <select id="bobina-unidade">
+                <option value="Unidade">Unidade</option>
+                <option value="Caixa">Caixa</option>
+                <option value="Pacote">Pacote</option>
+                <option value="Rolo">Rolo</option>
+                <option value="Kit">Kit</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="bobina-tipo">Tipo de bobina</label>
+              <select id="bobina-tipo">
+                <option value="1.0">1.0</option>
+                <option value="2.0">2.0</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Requisição de Discos</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarRequisicaoFicha('disco')">Salvar</button>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="disco-identificador">Identificador automático</label><input type="text" id="disco-identificador" readonly placeholder="Gerado ao salvar"></div>
+            <div class="field"><label for="disco-data">Data da requisição</label><input type="date" id="disco-data"></div>
+            <div class="field"><label for="disco-quantidade">Quantidade</label><input type="number" id="disco-quantidade" min="0" step="1"></div>
+            <div class="field">
+              <label for="disco-unidade">Unidade de medida</label>
+              <select id="disco-unidade">
+                <option value="Unidade">Unidade</option>
+                <option value="Caixa">Caixa</option>
+                <option value="Pacote">Pacote</option>
+                <option value="Disco">Disco</option>
+                <option value="Kit">Kit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid charts hidden" id="ficha-mov-baixa">
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Baixa de Ficha</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarBaixaFicha('ficha')">Salvar</button>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="baixa-ficha-identificador">Identificador automático</label><input type="text" id="baixa-ficha-identificador" readonly placeholder="Gerado ao salvar"></div>
+            <div class="field"><label for="baixa-ficha-data">Data da baixa</label><input type="date" id="baixa-ficha-data"></div>
+            <div class="field"><label for="baixa-ficha-quantidade">Quantidade</label><input type="number" id="baixa-ficha-quantidade" min="0" step="1"></div>
+            <div class="field">
+              <label for="baixa-ficha-unidade">Unidade de medida</label>
+              <select id="baixa-ficha-unidade">
+                <option value="Unidade">Unidade</option>
+                <option value="Caixa">Caixa</option>
+                <option value="Pacote">Pacote</option>
+                <option value="Bloco">Bloco</option>
+                <option value="Talão">Talão</option>
+                <option value="Kit">Kit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Baixa de Bobina</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarBaixaFicha('bobina')">Salvar</button>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="baixa-bobina-identificador">Identificador automático</label><input type="text" id="baixa-bobina-identificador" readonly placeholder="Gerado ao salvar"></div>
+            <div class="field"><label for="baixa-bobina-data">Data da baixa</label><input type="date" id="baixa-bobina-data"></div>
+            <div class="field"><label for="baixa-bobina-quantidade">Quantidade</label><input type="number" id="baixa-bobina-quantidade" min="0" step="1"></div>
+            <div class="field">
+              <label for="baixa-bobina-unidade">Unidade de medida</label>
+              <select id="baixa-bobina-unidade">
+                <option value="Unidade">Unidade</option>
+                <option value="Caixa">Caixa</option>
+                <option value="Pacote">Pacote</option>
+                <option value="Rolo">Rolo</option>
+                <option value="Kit">Kit</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="baixa-bobina-tipo">Tipo de bobina</label>
+              <select id="baixa-bobina-tipo">
+                <option value="1.0">1.0</option>
+                <option value="2.0">2.0</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Baixa de Discos</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarBaixaFicha('disco')">Salvar</button>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="baixa-disco-identificador">Identificador automático</label><input type="text" id="baixa-disco-identificador" readonly placeholder="Gerado ao salvar"></div>
+            <div class="field"><label for="baixa-disco-data">Data da baixa</label><input type="date" id="baixa-disco-data"></div>
+            <div class="field"><label for="baixa-disco-quantidade">Quantidade</label><input type="number" id="baixa-disco-quantidade" min="0" step="1"></div>
+            <div class="field">
+              <label for="baixa-disco-unidade">Unidade de medida</label>
+              <select id="baixa-disco-unidade">
+                <option value="Unidade">Unidade</option>
+                <option value="Caixa">Caixa</option>
+                <option value="Pacote">Pacote</option>
+                <option value="Disco">Disco</option>
+                <option value="Kit">Kit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="inline-edit-panel spaced">
+        <div class="card-header"><span class="card-title">Histórico de Requisições e Baixas</span></div>
+        <div class="field">
+          <label for="ficha-busca-historico">Buscar no histórico</label>
+          <input type="text" id="ficha-busca-historico" placeholder="Identificador, tipo, data, unidade ou quantidade" oninput="renderizarControleFicha()">
+        </div>
+        <div id="controle-ficha-lista" class="ops-list cad-scroll-list"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
