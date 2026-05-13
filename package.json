@@ -1,7 +1,7 @@
 {
   "name": "analise-performance",
   "version": "1.0.0",
-  "description": "Analise de Performance com persistencia em SQLite",
+  "description": "Analise de Performance com persistencia em MySQL",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
