@@ -30,6 +30,7 @@ const TRAJETOS_KEY = "simTrajetos";
 const DIAGNOSTICOS_KEY = "simDiagnosticosImportados";
 const FICHAS_KEY = "simControleFichas";
 const TELEMETRIA_KEY = "simTelemetria";
+const PLANEJAMENTOS_KEY = "simPlanejamentos";
 
 const STORAGE_KEYS = [
   STORAGE_KEY,
@@ -43,7 +44,8 @@ const STORAGE_KEYS = [
   TRAJETOS_KEY,
   DIAGNOSTICOS_KEY,
   FICHAS_KEY,
-  TELEMETRIA_KEY
+  TELEMETRIA_KEY,
+  PLANEJAMENTOS_KEY
 ];
 
 const STORAGE_API_MAP = {
@@ -58,7 +60,8 @@ const STORAGE_API_MAP = {
   [TRAJETOS_KEY]: "trajetos",
   [DIAGNOSTICOS_KEY]: "diagnosticos",
   [FICHAS_KEY]: "fichas",
-  [TELEMETRIA_KEY]: "telemetria"
+  [TELEMETRIA_KEY]: "telemetria",
+  [PLANEJAMENTOS_KEY]: "planejamentos"
 };
 
 const MIME_TYPES = {
@@ -290,7 +293,8 @@ function dadosConsolidados(banco) {
     trajetos: [],
     diagnosticos: [],
     fichas: { estoque: {}, requisicoes: [] },
-    telemetria: []
+    telemetria: [],
+    planejamentos: []
   };
 
   Object.entries(STORAGE_API_MAP).forEach(([storageKey, apiKey]) => {

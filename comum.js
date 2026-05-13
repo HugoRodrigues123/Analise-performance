@@ -45,7 +45,8 @@ const TRAJETOS_KEY = "simTrajetos";
 const DIAGNOSTICOS_KEY = "simDiagnosticosImportados";
 const FICHAS_KEY = "simControleFichas";
 const TELEMETRIA_KEY = "simTelemetria";
-const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, OCORRENCIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY, TELEMETRIA_KEY];
+const PLANEJAMENTOS_KEY = "simPlanejamentos";
+const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, OCORRENCIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY, TELEMETRIA_KEY, PLANEJAMENTOS_KEY];
 const PESOS_RANKING_MOTORISTA = {
   consumo: 35,
   gobrax: 35,
@@ -202,6 +203,7 @@ async function carregarDadosBanco() {
     sincronizarDadoBanco(DIAGNOSTICOS_KEY, dados.diagnosticos);
     sincronizarDadoBanco(FICHAS_KEY, dados.fichas, setControleFicha);
     sincronizarDadoBanco(TELEMETRIA_KEY, dados.telemetria);
+    sincronizarDadoBanco(PLANEJAMENTOS_KEY, dados.planejamentos);
 
     suprimirTransicaoOperacao = false;
     atualizarInterfacesCompartilhadas();
@@ -618,7 +620,10 @@ function atualizarInterfacesCompartilhadas() {
   preencherSelectMotoristas();
   preencherSelectVeiculos();
   preencherSelectTrajetos();
+  if (typeof renderizarTrajetos === "function") renderizarTrajetos();
   if (typeof popularSelectTelemetria === "function") popularSelectTelemetria();
+  if (typeof popularSelectsEquipamentos === "function") popularSelectsEquipamentos();
+  if (typeof renderizarEquipamentos === "function") renderizarEquipamentos();
   if (typeof renderizarCadastros === "function") renderizarCadastros();
   if (typeof renderizarControleMotoristas === "function") renderizarControleMotoristas();
   if (typeof preencherFiltrosControleFrota === "function") preencherFiltrosControleFrota();

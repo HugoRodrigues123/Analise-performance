@@ -82,4 +82,21 @@ input[type=range].red-track::-moz-range-thumb {
   color: #fff;
 }
 
+.trajectory-block {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.18);
+}
+
+.trajectory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.trajectory-header .section-note {
+  margin: 0;
+}
+
 

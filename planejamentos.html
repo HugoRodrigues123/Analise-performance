@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planejamentos</title>
+  <link rel="stylesheet" href="planejamentos.css?v=20260513-02">
+  <script src="comum.js?v=20260513-02" defer></script>
+  <script src="planejamentos.js?v=20260513-02" defer></script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 5a2 2 0 0 1 2-2h4v6H6a2 2 0 0 1-2-2Z"></path>
+        <path d="M14 3h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4Z"></path>
+        <path d="M4 17a2 2 0 0 1 2-2h4v6H6a2 2 0 0 1-2-2Z"></path>
+        <path d="M14 15h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4Z"></path>
+        <path d="M10 6h4"></path><path d="M10 18h4"></path><path d="M12 9v6"></path>
+      </svg>
+      <div>
+        <div class="topbar-title">Planejamentos</div>
+        <div class="topbar-sub">Diagramas, fluxos, casos de uso e mapas mentais</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="btn btn-sm" href="index.html">Performance</a>
+      <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
+      <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
+      <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
+      <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
+      <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
+      <a class="btn btn-sm" href="multas.html">Multas</a>
+      <a class="btn btn-sm" href="advertencias.html">Advertências</a>
+      <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <a class="btn btn-sm" href="planejamentos.html">Planejamentos</a>
+      <a class="btn btn-sm" href="controle-telemetria.html">Controle de Equipamentos</a>
+    </div>
+  </div>
+
+  <main class="page planning-page">
+    <section class="card meeting-card">
+      <div class="card-header">
+        <span class="card-title">Ata de Reuniões</span>
+        <div class="actions-row">
+          <button class="btn btn-sm" type="button" onclick="limparAtaReuniao()">Limpar</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarAtaReuniao()">Salvar Ata</button>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label for="ata-data">Data da reunião</label>
+          <input type="date" id="ata-data">
+        </div>
+        <div class="field">
+          <label for="ata-titulo">Título / pauta</label>
+          <input type="text" id="ata-titulo" placeholder="Ex: Reunião operacional">
+        </div>
+        <div class="field">
+          <label for="ata-participantes">Participantes</label>
+          <input type="text" id="ata-participantes" placeholder="Nomes separados por vírgula">
+        </div>
+      </div>
+
+      <div class="grid2 spaced">
+        <div class="field">
+          <label for="ata-conteudos">Conteúdos abordados</label>
+          <textarea id="ata-conteudos" rows="7" placeholder="Liste os temas, decisões e pontos discutidos..."></textarea>
+        </div>
+        <div class="field">
+          <label for="ata-acoes">Ações / responsáveis</label>
+          <textarea id="ata-acoes" rows="7" placeholder="Registre próximas ações, responsáveis e prazos..."></textarea>
+        </div>
+      </div>
+
+      <div class="meeting-list" id="ata-lista"></div>
+    </section>
+    <section class="card planning-shell">
+      <div class="card-header">
+        <span class="card-title">Planejamentos</span>
+        <div class="actions-row">
+          <button class="btn btn-sm" type="button" onclick="novoPlanejamento()">Novo</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarPlanejamento()">Salvar</button>
+          <button class="btn btn-sm btn-red" type="button" onclick="excluirPlanejamento()">Excluir</button>
+        </div>
+      </div>
+
+      <div class="planning-grid">
+        <aside class="planning-sidebar">
+          <div class="field">
+            <label for="plan-lista">Planejamento salvo</label>
+            <select id="plan-lista" onchange="carregarPlanejamentoSelecionado()"></select>
+          </div>
+          <div class="field">
+            <label for="plan-nome">Nome</label>
+            <input type="text" id="plan-nome" value="Novo planejamento" oninput="marcarPlanejamentoAlterado()">
+          </div>
+          <div class="field">
+            <label for="plan-tipo">Ferramenta</label>
+            <select id="plan-tipo" onchange="trocarTipoPlanejamento()">
+              <option value="mindmap">Mapa mental</option>
+              <option value="classe">Diagrama de classe</option>
+              <option value="atividade">Diagrama de atividades</option>
+              <option value="casoUso">Diagrama de casos de uso</option>
+            </select>
+          </div>
+
+          <div class="planning-tabs">
+            <button class="plan-tab active" type="button" data-tool="mindmap" onclick="selecionarFerramenta('mindmap')">Mapa mental</button>
+            <button class="plan-tab" type="button" data-tool="classe" onclick="selecionarFerramenta('classe')">Classe</button>
+            <button class="plan-tab" type="button" data-tool="atividade" onclick="selecionarFerramenta('atividade')">Atividade</button>
+            <button class="plan-tab" type="button" data-tool="casoUso" onclick="selecionarFerramenta('casoUso')">Caso de uso</button>
+          </div>
+
+          <div class="planning-tools">
+            <button class="btn btn-sm" type="button" onclick="adicionarNo()">Adicionar nó</button>
+            <button class="btn btn-sm" type="button" onclick="adicionarFilho()">Adicionar filho</button>
+            <button class="btn btn-sm" type="button" onclick="iniciarConexao()">Conectar</button>
+            <button class="btn btn-sm" type="button" onclick="removerSelecionado()">Remover</button>
+          </div>
+
+          <div class="field">
+            <label for="plan-node-texto">Texto selecionado</label>
+            <textarea id="plan-node-texto" rows="4" oninput="atualizarTextoSelecionado()" placeholder="Selecione um nó para editar"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="plan-node-cor">Cor do nó</label>
+            <select id="plan-node-cor" onchange="atualizarCorSelecionada()">
+              <option value="blue">Azul</option>
+              <option value="green">Verde</option>
+              <option value="amber">Amarelo</option>
+              <option value="red">Vermelho</option>
+              <option value="violet">Violeta</option>
+            </select>
+          </div>
+        </aside>
+
+        <section class="planning-workbench">
+          <div class="planning-toolbar">
+            <div>
+              <strong id="plan-tool-title">Mapa mental</strong>
+              <span id="plan-status">Pronto</span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-sm" type="button" onclick="centralizarMapa()">Centralizar</button>
+              <button class="btn btn-sm" type="button" onclick="organizarMapa()">Organizar</button>
+            </div>
+          </div>
+
+          <div class="planning-canvas" id="plan-canvas" onmousedown="limparSelecaoCanvas(event)">
+            <svg id="plan-links" class="planning-links" aria-hidden="true"></svg>
+            <div id="plan-nodes" class="planning-nodes"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
+
+
+
+
+

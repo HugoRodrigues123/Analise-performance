@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Telemetria</title>
-  <link rel="stylesheet" href="controle-telemetria.css?v=20260511-02">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="comum.js?v=20260512-01" defer></script>
-  <script src="controle-telemetria.js?v=20260511-01" defer></script>
+  <title>Controle de Equipamentos</title>
+  <link rel="stylesheet" href="controle-telemetria.css?v=20260513-01">
+  <script src="comum.js?v=20260513-02" defer></script>
+  <script src="controle-telemetria.js?v=20260513-02" defer></script>
 </head>
 <body>
   <div class="topbar">
     <div class="topbar-brand">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M3 3v18h18"></path><path d="m7 14 3-3 3 2 5-7"></path><path d="M18 6h3v3"></path>
+        <path d="M12 2v4"></path><path d="M12 18v4"></path><path d="m4.93 4.93 2.83 2.83"></path><path d="m16.24 16.24 2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><circle cx="12" cy="12" r="4"></circle>
       </svg>
       <div>
-        <div class="topbar-title">Controle de Telemetria</div>
-        <div class="topbar-sub">Monitoramento de dados de telemetria dos veículos</div>
+        <div class="topbar-title">Controle de Equipamentos</div>
+        <div class="topbar-sub">Telemetria, câmeras e rastreadores da frota</div>
       </div>
     </div>
     <div class="topbar-actions">
@@ -30,121 +29,183 @@
       <a class="btn btn-sm" href="multas.html">Multas</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
+      <a class="btn btn-sm" href="planejamentos.html">Planejamentos</a>
     </div>
   </div>
 
-  <main class="page">
+  <main class="page equipamentos-page">
     <section class="card">
       <div class="card-header">
-        <span class="card-title">Resumo da Telemetria</span>
-        <div class="actions-row">
-          <button class="btn btn-sm" type="button" onclick="limparTelemetria()">Limpar</button>
-          <button class="btn btn-sm btn-green" type="button" onclick="salvarTelemetria()">Salvar Registro</button>
-        </div>
+        <span class="card-title">Resumo dos Equipamentos</span>
       </div>
-
-      <div class="dashboard-grid">
-        <div class="metric-card">
-          <div class="metric-lbl">Registros</div>
-          <div class="metric-val"><span id="tel-kpi-total">0</span></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-lbl">Média de Consumo</div>
-          <div class="metric-val"><span id="tel-kpi-media">—</span><span class="metric-unit"> km/L</span></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-lbl">Pressão Agressiva</div>
-          <div class="metric-val"><span id="tel-kpi-agressivo">—</span><span class="metric-unit"> %</span></div>
-        </div>
-      </div>
+      <div class="equipment-dashboard" id="equip-dashboard"></div>
     </section>
 
     <section class="card">
       <div class="card-header">
-        <span class="card-title">Registro de Telemetria</span>
+        <span class="card-title">Cadastro de Equipamento</span>
+        <div class="actions-row">
+          <button class="btn btn-sm" type="button" onclick="limparEquipamento()">Limpar</button>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarEquipamento()">Salvar Equipamento</button>
+        </div>
       </div>
 
       <div class="grid4">
         <div class="field">
-          <label for="tel-data">Data</label>
-          <input type="date" id="tel-data">
-        </div>
-        <div class="field">
-          <label for="tel-motorista">Motorista</label>
-          <select id="tel-motorista"></select>
-        </div>
-        <div class="field">
-          <label for="tel-placa">Placa</label>
-          <select id="tel-placa"></select>
-        </div>
-        <div class="field">
-          <label for="tel-trajeto">Trajeto</label>
-          <input type="text" id="tel-trajeto" placeholder="Origem - Destino">
-        </div>
-      </div>
-
-      <div class="grid4 spaced">
-        <div class="field">
-          <label for="tel-deslocamento">Deslocamento</label>
-          <input type="number" id="tel-deslocamento" min="0" step="0.1" placeholder="km">
-        </div>
-        <div class="field">
-          <label for="tel-consumo">Consumo</label>
-          <input type="number" id="tel-consumo" min="0" step="0.1" placeholder="litros">
-        </div>
-        <div class="field">
-          <label for="tel-gobrax">Nota Gobrax</label>
-          <input type="number" id="tel-gobrax" min="0" max="100" step="1" placeholder="0 a 100">
-        </div>
-        <div class="field">
-          <label for="tel-criticidade">Criticidade do Trajeto</label>
-          <select id="tel-criticidade">
-            <option value="Bom">Bom</option>
-            <option value="Médio">Médio</option>
-            <option value="Crítico">Crítico</option>
+          <label for="equip-tipo">Tipo</label>
+          <select id="equip-tipo">
+            <option value="telemetria">Telemetria</option>
+            <option value="camera">Câmera</option>
+            <option value="rastreador">Rastreador</option>
           </select>
         </div>
+        <div class="field">
+          <label for="equip-codigo">Código / Serial</label>
+          <input type="text" id="equip-codigo" placeholder="Ex: TEL-001">
+        </div>
+        <div class="field">
+          <label for="equip-status">Status</label>
+          <select id="equip-status" onchange="atualizarCamposStatusEquipamento()">
+            <option value="disponivel">Disponível para instalação</option>
+            <option value="instalado">Instalado</option>
+            <option value="retirado">Retirado</option>
+            <option value="manutencao">Manutenção</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="equip-placa">Placa vinculada</label>
+          <select id="equip-placa"></select>
+        </div>
       </div>
 
-      <div style="font-size:13px;color:var(--text2);margin:16px 0 8px;font-weight:600">
-        Pressão do pedal do acelerador
+      <div class="grid3 spaced">
+        <div class="field">
+          <label for="equip-data">Data</label>
+          <input type="date" id="equip-data">
+        </div>
+        <div class="field">
+          <label for="equip-modelo">Modelo / Observação curta</label>
+          <input type="text" id="equip-modelo" placeholder="Modelo, marca ou referência">
+        </div>
+        <div class="field">
+          <label for="equip-responsavel">Responsável</label>
+          <input type="text" id="equip-responsavel" placeholder="Quem registrou">
+        </div>
       </div>
-      <div class="grid3">
-        <div class="field">
-          <label for="tel-pedal-ideal">Ideal</label>
-          <input type="number" id="tel-pedal-ideal" min="0" max="100" step="1" placeholder="%">
-        </div>
-        <div class="field">
-          <label for="tel-pedal-medio">Médio</label>
-          <input type="number" id="tel-pedal-medio" min="0" max="100" step="1" placeholder="%">
-        </div>
-        <div class="field">
-          <label for="tel-pedal-agressivo">Agressivo</label>
-          <input type="number" id="tel-pedal-agressivo" min="0" max="100" step="1" placeholder="%">
-        </div>
+
+      <div class="field spaced">
+        <label for="equip-obs">Observações</label>
+        <textarea id="equip-obs" placeholder="Detalhes do equipamento, condição, motivo de retirada ou instalação..."></textarea>
       </div>
     </section>
 
     <section class="card">
       <div class="card-header">
-        <span class="card-title">Histórico de Telemetria</span>
-        <input type="text" id="tel-busca" class="search-compact" placeholder="Buscar por placa, motorista, data ou trajeto" oninput="renderizarTelemetria()">
+        <span class="card-title">Registrar Retirada / Instalação</span>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarMovimentacaoEquipamento()">Salvar Movimentação</button>
       </div>
-      <div id="telemetria-lista" class="ops-list">
-        <div class="hist-empty">Nenhum registro de telemetria salvo.</div>
+      <div class="grid4">
+        <div class="field">
+          <label for="mov-equipamento">Equipamento</label>
+          <select id="mov-equipamento"></select>
+        </div>
+        <div class="field">
+          <label for="mov-tipo">Movimentação</label>
+          <select id="mov-tipo">
+            <option value="instalacao">Instalação</option>
+            <option value="retirada">Retirada</option>
+            <option value="manutencao">Enviar para manutenção</option>
+            <option value="disponivel">Retornar para disponível</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mov-placa">Placa</label>
+          <select id="mov-placa"></select>
+        </div>
+        <div class="field">
+          <label for="mov-data">Data</label>
+          <input type="date" id="mov-data">
+        </div>
       </div>
+      <div class="field spaced">
+        <label for="mov-obs">Registro da movimentação</label>
+        <textarea id="mov-obs" placeholder="Informe o motivo da retirada, instalação ou retorno ao estoque..."></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Registro de Manutenção</span>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarManutencaoEquipamento()">Salvar Manutenção</button>
+      </div>
+      <div class="grid4">
+        <div class="field">
+          <label for="manut-tipo">Tipo</label>
+          <select id="manut-tipo" onchange="atualizarItensManutencao()">
+            <option value="rastreador">Rastreador</option>
+            <option value="camera">Câmera</option>
+            <option value="telemetria">Telemetria</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="manut-item">Item</label>
+          <select id="manut-item"></select>
+        </div>
+        <div class="field">
+          <label for="manut-placa">Placa</label>
+          <select id="manut-placa"></select>
+        </div>
+        <div class="field">
+          <label for="manut-data">Data</label>
+          <input type="date" id="manut-data">
+        </div>
+      </div>
+      <div class="grid3 spaced">
+        <div class="field">
+          <label for="manut-responsavel">Responsável</label>
+          <input type="text" id="manut-responsavel" placeholder="Técnico ou responsável">
+        </div>
+        <div class="field">
+          <label for="manut-status">Resultado</label>
+          <select id="manut-status">
+            <option value="realizada">Realizada</option>
+            <option value="pendente">Pendente</option>
+            <option value="substituido">Substituído</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="manut-equipamento">Equipamento / serial</label>
+          <input type="text" id="manut-equipamento" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="field spaced">
+        <label for="manut-obs">Descrição da manutenção</label>
+        <textarea id="manut-obs" placeholder="Serviço realizado, peças trocadas, diagnóstico ou pendências..."></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Equipamentos Cadastrados</span>
+        <input type="text" id="equip-busca" class="search-compact" placeholder="Buscar por tipo, código, placa, status ou responsável" oninput="renderizarEquipamentos()">
+      </div>
+      <div id="equip-lista" class="ops-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Registros de Retirada</span>
+      </div>
+      <div id="equip-retiradas" class="ops-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Histórico de Manutenções</span>
+      </div>
+      <div id="equip-manutencoes" class="ops-list"></div>
     </section>
   </main>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 

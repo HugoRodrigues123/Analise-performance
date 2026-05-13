@@ -1,5 +1,6 @@
 @import url("./style.css?v=20260511-05");
 
 /* Estilos especificos da guia Diagnostico */
-
-
+.kpis {
+  margin-top: 16px;
+}

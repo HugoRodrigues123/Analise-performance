@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Análise de Performance - Frota</title>
-  <link rel="stylesheet" href="index.css?v=20260511-02">
+  <link rel="stylesheet" href="index.css?v=20260513-03">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="comum.js?v=20260512-01" defer></script>
-  <script src="index.js?v=20260511-01" defer></script>
+<script src="comum.js?v=20260513-03" defer></script>
+  <script src="index.js?v=20260513-10" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -30,7 +30,8 @@
       <a class="btn btn-sm" href="multas.html">Multas</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
-      <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
+      <a class="btn btn-sm" href="planejamentos.html">Planejamentos</a>
+      <a class="btn btn-sm" href="controle-telemetria.html">Controle de Equipamentos</a>
     </div>
   </div>
 
@@ -85,27 +86,13 @@
         <span class="badge" id="nota-badge">Nota Gobrax: 70</span>
       </div>
 
-      <div class="slider-row">
-        <div class="slider-top">
-          <span class="slider-name">Tempo em faixa verde (RPM economico)</span>
-          <span class="slider-val c-green" id="v-fg">70%</span>
-        </div>
-        <div class="slider-input-row">
-          <input type="range" class="green-track" id="faixaVerde" min="0" max="100" value="70" step="1" oninput="syncFromSlider('faixaVerde','ni-fg'); calcular()">
-          <input type="number" class="num-input c-green" id="ni-fg" min="0" max="100" value="70" oninput="syncFromInput('ni-fg','faixaVerde'); calcular()" aria-label="Faixa verde em porcentagem">
-          <span class="unit">%</span>
-        </div>
-      </div>
+      <input type="hidden" id="ni-fg" value="70">
+      <input type="hidden" id="ni-em" value="25">
 
-      <div class="slider-row">
-        <div class="slider-top">
-          <span class="slider-name">Tempo em embalo (motor desacoplado / freio motor)</span>
-          <span class="slider-val c-green" id="v-em">25%</span>
-        </div>
-        <div class="slider-input-row">
-          <input type="range" class="green-track" id="embalo" min="0" max="100" value="25" step="1" oninput="syncFromSlider('embalo','ni-em'); calcular()">
-          <input type="number" class="num-input c-green" id="ni-em" min="0" max="100" value="25" oninput="syncFromInput('ni-em','embalo'); calcular()" aria-label="Embalo em porcentagem">
-          <span class="unit">%</span>
+      <div class="grid2">
+        <div class="field">
+          <label for="obs-data">Data</label>
+          <input type="date" id="obs-data">
         </div>
       </div>
 
@@ -175,13 +162,46 @@
       </div>
       <div class="grid2 spaced">
         <div class="field">
-          <label for="trajeto-registro">Trajeto</label>
-          <select id="trajeto-registro" onchange="calcular()"></select>
+          <label for="condicao-carga">Condição da carga</label>
+          <select id="condicao-carga" onchange="calcular()">
+            <option value="Carregado">Carregado</option>
+            <option value="Vazio">Vazio</option>
+          </select>
         </div>
-        <div class="field">
-          <label for="km-carregado">Km carregado</label>
-          <input type="number" id="km-carregado" min="0" step="10" placeholder="Ex: 4200" oninput="calcular()">
+      </div>
+
+      <div class="trajectory-block spaced">
+        <div class="trajectory-header">
+          <span class="card-title">Trajeto</span>
+          <button class="btn btn-sm btn-green" type="button" onclick="salvarTrajeto()">Salvar Trajeto e Performance</button>
         </div>
+        <div class="ops-grid">
+          <div class="field">
+            <label for="trajeto-cliente-origem">Cliente Origem</label>
+            <input type="text" id="trajeto-cliente-origem" placeholder="Ex: Empresa A">
+          </div>
+          <div class="field">
+            <label for="trajeto-cliente-destino">Cliente Destino</label>
+            <input type="text" id="trajeto-cliente-destino" placeholder="Ex: Empresa B">
+          </div>
+          <div class="field">
+            <label for="trajeto-origem">Cidade Origem</label>
+            <input type="text" id="trajeto-origem" placeholder="Ex: CD Sao Paulo">
+          </div>
+          <div class="field">
+            <label for="trajeto-destino">Cidade Destino</label>
+            <input type="text" id="trajeto-destino" placeholder="Ex: Interior SP">
+          </div>
+          <div class="field">
+            <label for="trajeto-desempenho">Grau de desempenho</label>
+            <select id="trajeto-desempenho">
+              <option value="Bom">Bom</option>
+              <option value="Medio">Medio</option>
+              <option value="Critico">Critico</option>
+            </select>
+          </div>
+        </div>
+        <div id="trajetos-lista" class="ops-list"></div>
       </div>
       <div class="hint">A media de consumo e calculada por deslocamento real dividido pelo consumo real.</div>
     </section>
@@ -199,12 +219,6 @@
       <div class="card-header">
         <span class="card-title">Observacoes e Diagnostico</span>
         <button class="btn btn-sm btn-green" type="button" onclick="salvarRegistro()">Salvar no Historico</button>
-      </div>
-      <div class="grid3">
-        <div class="field">
-          <label for="obs-data">Data</label>
-          <input type="date" id="obs-data">
-        </div>
       </div>
       <div class="field spaced">
         <label for="obs-texto">Observacoes / Diagnostico</label>
@@ -393,6 +407,20 @@
   </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
