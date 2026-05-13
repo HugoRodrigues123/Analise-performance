@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Análise de Performance - Frota</title>
-  <link rel="stylesheet" href="style.css?v=20260507-03">
+  <link rel="stylesheet" href="index.css?v=20260511-02">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="comum.js?v=20260506-14" defer></script>
-  <script src="index.js?v=20260506-14" defer></script>
+<script src="comum.js?v=20260512-01" defer></script>
+  <script src="index.js?v=20260511-01" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -22,7 +22,6 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <a class="btn btn-sm" href="index.html">Performance</a>
       <a class="btn btn-sm" href="cadastros.html">Cadastros</a>
       <a class="btn btn-sm" href="controle-motoristas.html">Motoristas</a>
       <a class="btn btn-sm" href="controle-ficha.html">Controle de Ficha</a>
@@ -30,7 +29,6 @@
       <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
       <a class="btn btn-sm" href="multas.html">Multas</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
-      <a class="btn btn-sm" href="avarias.html">Avarias</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
       <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
     </div>
@@ -46,16 +44,13 @@
           <label for="motorista-cadastro">Motorista</label>
           <div class="field-action">
             <select id="motorista-cadastro"></select>
-            <button class="btn btn-sm" type="button" onclick="cadastrarMotorista()">Novo</button>
-            <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('motorista-cadastro')">Excluir</button>
           </div>
         </div>
         <div class="field">
           <label for="placa-cadastro">Placa</label>
           <div class="field-action">
             <select id="placa-cadastro" onchange="carregarVeiculoPorPlaca()"></select>
-            <button class="btn btn-sm" type="button" onclick="cadastrarVeiculoAtual()">Cadastrar</button>
-            <button class="btn btn-sm btn-red" type="button" onclick="excluirVeiculoSelecionado('placa-cadastro')">Excluir</button>
+            <button class="btn btn-sm" type="button" onclick="limparIdentificacaoVeiculo()">Limpar</button>
           </div>
         </div>
         <div class="field">
@@ -81,7 +76,7 @@
           </select>
         </div>
       </div>
-      <div class="hint">Busque uma placa cadastrada para preencher fabricante, modelo, ano e tracao automaticamente. Para cadastrar uma placa, preencha estes campos e clique em Cadastrar.</div>
+      <div class="hint">Selecione uma placa cadastrada para preencher fabricante, modelo, ano e tracao automaticamente. Para cadastrar novas placas, use a guia Cadastros.</div>
     </section>
 
     <section class="card">
@@ -91,7 +86,10 @@
       </div>
 
       <div class="slider-row">
-        <div class="slider-top"><span class="slider-name">Tempo em faixa verde (RPM economico)</span></div>
+        <div class="slider-top">
+          <span class="slider-name">Tempo em faixa verde (RPM economico)</span>
+          <span class="slider-val c-green" id="v-fg">70%</span>
+        </div>
         <div class="slider-input-row">
           <input type="range" class="green-track" id="faixaVerde" min="0" max="100" value="70" step="1" oninput="syncFromSlider('faixaVerde','ni-fg'); calcular()">
           <input type="number" class="num-input c-green" id="ni-fg" min="0" max="100" value="70" oninput="syncFromInput('ni-fg','faixaVerde'); calcular()" aria-label="Faixa verde em porcentagem">
@@ -100,7 +98,10 @@
       </div>
 
       <div class="slider-row">
-        <div class="slider-top"><span class="slider-name">Tempo em embalo (motor desacoplado / freio motor)</span></div>
+        <div class="slider-top">
+          <span class="slider-name">Tempo em embalo (motor desacoplado / freio motor)</span>
+          <span class="slider-val c-green" id="v-em">25%</span>
+        </div>
         <div class="slider-input-row">
           <input type="range" class="green-track" id="embalo" min="0" max="100" value="25" step="1" oninput="syncFromSlider('embalo','ni-em'); calcular()">
           <input type="number" class="num-input c-green" id="ni-em" min="0" max="100" value="25" oninput="syncFromInput('ni-em','embalo'); calcular()" aria-label="Embalo em porcentagem">
@@ -123,7 +124,10 @@
       </div>
 
       <div class="slider-row">
-        <div class="slider-top"><span class="slider-name">Aceleracao ideal</span></div>
+        <div class="slider-top">
+          <span class="slider-name">Aceleracao ideal</span>
+          <span class="slider-val c-green" id="v-id">60%</span>
+        </div>
         <div class="slider-input-row">
           <input type="range" class="green-track" id="acIdeal" min="0" max="100" value="60" step="1" oninput="syncFromSlider('acIdeal','ni-id'); calcular()">
           <input type="number" class="num-input c-green" id="ni-id" min="0" max="100" value="60" oninput="syncFromInput('ni-id','acIdeal'); calcular()" aria-label="Aceleracao ideal">
@@ -132,7 +136,10 @@
       </div>
 
       <div class="slider-row">
-        <div class="slider-top"><span class="slider-name">Aceleracao mediana</span></div>
+        <div class="slider-top">
+          <span class="slider-name">Aceleracao mediana</span>
+          <span class="slider-val c-amber" id="v-md">30%</span>
+        </div>
         <div class="slider-input-row">
           <input type="range" class="amber-track" id="acMed" min="0" max="100" value="30" step="1" oninput="syncFromSlider('acMed','ni-md'); calcular()">
           <input type="number" class="num-input c-amber" id="ni-md" min="0" max="100" value="30" oninput="syncFromInput('ni-md','acMed'); calcular()" aria-label="Aceleracao mediana">
@@ -141,7 +148,10 @@
       </div>
 
       <div class="slider-row">
-        <div class="slider-top"><span class="slider-name">Aceleracao critica</span></div>
+        <div class="slider-top">
+          <span class="slider-name">Aceleracao critica</span>
+          <span class="slider-val c-red" id="v-cr">10%</span>
+        </div>
         <div class="slider-input-row">
           <input type="range" class="red-track" id="acCrit" min="0" max="100" value="10" step="1" oninput="syncFromSlider('acCrit','ni-cr'); calcular()">
           <input type="number" class="num-input c-red" id="ni-cr" min="0" max="100" value="10" oninput="syncFromInput('ni-cr','acCrit'); calcular()" aria-label="Aceleracao critica">
@@ -383,6 +393,15 @@
   </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 

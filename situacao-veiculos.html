@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Controle de Frota</title>
-  <link rel="stylesheet" href="style.css?v=20260507-03">
+  <link rel="stylesheet" href="situacao-veiculos.css?v=20260513-01">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="comum.js?v=20260506-14" defer></script>
-  <script src="situacao-veiculos.js?v=20260506-14" defer></script>
+<script src="comum.js?v=20260512-01" defer></script>
+  <script src="situacao-veiculos.js?v=20260513-01" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -28,7 +28,6 @@
       <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
       <a class="btn btn-sm" href="multas.html">Multas</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
-      <a class="btn btn-sm" href="avarias.html">Avarias</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
       <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
     </div>
@@ -52,28 +51,54 @@
           <div class="metric-val"><span id="sit-kpi-regular">0</span></div>
         </div>
         <div class="metric-card">
-          <div class="metric-lbl">Em atenção</div>
+          <div class="metric-lbl">Irregulares</div>
           <div class="metric-val"><span id="sit-kpi-pendente">0</span></div>
         </div>
       </div>
       <div class="ops-grid spaced">
-        <div class="field"><label for="sit-busca-placa">Placa</label><input type="text" id="sit-busca-placa" oninput="renderizarSituacaoVeiculos()"></div>
-        <div class="field"><label for="sit-busca-fabricante">Fabricante</label><input type="text" id="sit-busca-fabricante" oninput="renderizarSituacaoVeiculos()"></div>
-        <div class="field"><label for="sit-busca-modelo">Modelo</label><input type="text" id="sit-busca-modelo" oninput="renderizarSituacaoVeiculos()"></div>
+        <div class="field"><label for="sit-busca-placa">Placa</label><select id="sit-busca-placa" onchange="renderizarSituacaoVeiculos()"></select></div>
+        <div class="field"><label for="sit-busca-fabricante">Fabricante</label><select id="sit-busca-fabricante" onchange="renderizarSituacaoVeiculos()"></select></div>
+        <div class="field"><label for="sit-busca-modelo">Modelo</label><select id="sit-busca-modelo" onchange="renderizarSituacaoVeiculos()"></select></div>
+        <div class="field"><label for="sit-busca-tracao">Tração</label><select id="sit-busca-tracao" onchange="renderizarSituacaoVeiculos()"></select></div>
         <div class="field">
           <label for="sit-busca-status">Status</label>
           <select id="sit-busca-status" onchange="renderizarSituacaoVeiculos()">
             <option value="">Todos</option>
             <option value="Regular">Regular</option>
-            <option value="Atenção">Atenção</option>
+            <option value="Irregular">Irregular</option>
           </select>
         </div>
       </div>
       <div id="situacao-lista" class="ops-list"></div>
     </section>
   </main>
+
+  <div class="modal-backdrop" id="frota-edicao-modal" aria-hidden="true">
+    <div class="modal-panel modal-panel-wide" role="dialog" aria-modal="true" aria-labelledby="frota-edicao-titulo">
+      <div class="card-header">
+        <div>
+          <span class="card-title" id="frota-edicao-titulo">Editar Controle de Frota</span>
+          <div class="section-note" id="frota-edicao-subtitulo"></div>
+        </div>
+        <button class="btn btn-sm" type="button" onclick="fecharEdicaoFrota()">Fechar</button>
+      </div>
+      <div id="frota-edicao-corpo"></div>
+      <div class="modal-actions">
+        <button class="btn btn-sm" type="button" onclick="fecharEdicaoFrota()">Cancelar</button>
+        <button class="btn btn-sm btn-green" type="button" onclick="salvarEdicaoFrota()">Salvar</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 

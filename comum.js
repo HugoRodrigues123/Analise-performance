@@ -10,7 +10,7 @@ const FABRICANTES = {
 const MODELOS = {
   scania: { R450: 2.72, R540: 2.55, R500: 2.63, S450: 2.78, S500: 2.65, P360: 2.40, G410: 2.50, G450: 2.56 },
   volvo: { FH460: 2.74, FH540: 2.56, FH500: 2.68, FM370: 2.30, FM460: 2.55, FMX440: 2.35, FMX500: 2.28 },
-  mercedes: { "NEW ACTROS 2546": 2.62, "NEW ACTROS 2648": 2.45, "ACTROS 2644": 2.40, "AROCS 3348": 2.15, "AXOR 2544": 2.35 },
+  mercedes: { "NEW ACTROS 2546": 2.62, "NEW ACTROS 2648": 2.45, "ACTROS 2644": 2.40, "ACTROS 2651": 2.45, "AROCS 3348": 2.15, "AXOR 2544": 2.35 },
   vw: { "METEOR 28460": 2.12, "METEOR 33460": 2.05, "CONSTELLATION 24280": 2.20, "DELIVERY 11.180": 2.80, "EXPRESS DRC 4X2": 2.80, "WORKER 26290": 2.10 },
   iveco: { "S-WAY 540": 2.55, "STRALIS HI-WAY 570": 2.48, "TECTOR 240E28": 2.65, "EUROCARGO 170E28": 2.70 },
   man: { "TGX 28.480": 2.60, "TGS 26.440": 2.45, "TGM 15.250": 2.70, "TGX 33.540": 2.42 }
@@ -37,13 +37,15 @@ const STORAGE_KEY = "simHistorico";
 const MULTAS_KEY = "simMultas";
 const ADVERTENCIAS_KEY = "simAdvertencias";
 const AVARIAS_KEY = "simAvarias";
+const OCORRENCIAS_KEY = "simOcorrencias";
 const MOTORISTAS_KEY = "simMotoristas";
 const MOTORISTAS_STATUS_KEY = "simMotoristasStatus";
 const VEICULOS_KEY = "simVeiculos";
 const TRAJETOS_KEY = "simTrajetos";
 const DIAGNOSTICOS_KEY = "simDiagnosticosImportados";
 const FICHAS_KEY = "simControleFichas";
-const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY];
+const TELEMETRIA_KEY = "simTelemetria";
+const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, OCORRENCIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY, TELEMETRIA_KEY];
 const PESOS_RANKING_MOTORISTA = {
   consumo: 35,
   gobrax: 35,
@@ -95,6 +97,8 @@ let sincronizacaoBancoAtiva = false;
 let timerPersistenciaBanco = null;
 const pendenciasBanco = new Map();
 const TEMPO_TRANSICAO_GUIA_MS = 1000;
+let timerTransicaoOperacao = null;
+let suprimirTransicaoOperacao = false;
 
 document.addEventListener("DOMContentLoaded", iniciarAplicacao);
 
@@ -122,6 +126,7 @@ function instalarTransicaoNavegacao() {
   }
 
   requestAnimationFrame(() => document.body.classList.add("page-ready"));
+  instalarTransicaoAcoes();
 
   document.querySelectorAll('.topbar-actions a[href$=".html"], a.btn[href$=".html"]').forEach((link) => {
     if (link.dataset.transitionReady === "1") return;
@@ -141,52 +146,92 @@ function instalarTransicaoNavegacao() {
   });
 }
 
+function mostrarTransicaoOperacao(duracao = TEMPO_TRANSICAO_GUIA_MS) {
+  if (suprimirTransicaoOperacao) return;
+  instalarTransicaoNavegacao();
+  const overlay = document.getElementById("page-transition");
+  if (!overlay) return;
+
+  overlay.classList.remove("active");
+  void overlay.offsetWidth;
+  overlay.classList.add("active");
+
+  if (timerTransicaoOperacao) clearTimeout(timerTransicaoOperacao);
+  timerTransicaoOperacao = setTimeout(() => {
+    overlay.classList.remove("active");
+  }, duracao);
+}
+
+function registrarTransicaoOperacao() {
+  if (suprimirTransicaoOperacao) return;
+  setTimeout(() => mostrarTransicaoOperacao(), 0);
+}
+
+function instalarTransicaoAcoes() {
+  if (document.body.dataset.operationTransitionReady === "1") return;
+  document.body.dataset.operationTransitionReady = "1";
+  document.addEventListener("click", (event) => {
+    const alvo = event.target.closest("button, a.btn");
+    if (!alvo || alvo.closest(".topbar-actions") || alvo.closest("#app-message-modal")) return;
+    const texto = (alvo.textContent || "").trim().toLowerCase();
+    if (texto.includes("limpar")) {
+      setTimeout(() => registrarTransicaoOperacao(), 0);
+    }
+  });
+}
+
 async function carregarDadosBanco() {
   try {
     const response = await fetch('/api/dados', { cache: 'no-store' });
     if (!response.ok) throw new Error('Erro ao carregar dados do banco');
 
     const dados = await response.json();
-
-    if (dados.historico && Array.isArray(dados.historico)) {
-      setHistorico(dados.historico);
-    }
-    if (dados.multas && Array.isArray(dados.multas)) {
-      setListaStorage(MULTAS_KEY, dados.multas);
-    }
-    if (dados.advertencias && Array.isArray(dados.advertencias)) {
-      setListaStorage(ADVERTENCIAS_KEY, dados.advertencias);
-    }
-    if (dados.avarias && Array.isArray(dados.avarias)) {
-      setListaStorage(AVARIAS_KEY, dados.avarias);
-    }
-    if (dados.motoristas && Array.isArray(dados.motoristas)) {
-      setListaStorage(MOTORISTAS_KEY, dados.motoristas);
-    }
-    if (dados.motoristasStatus && Array.isArray(dados.motoristasStatus)) {
-      setListaStorage(MOTORISTAS_STATUS_KEY, dados.motoristasStatus);
-    }
-    if (dados.veiculos && Array.isArray(dados.veiculos)) {
-      setListaStorage(VEICULOS_KEY, dados.veiculos);
-    }
-    if (dados.trajetos && Array.isArray(dados.trajetos)) {
-      setListaStorage(TRAJETOS_KEY, dados.trajetos);
-    }
-    if (dados.diagnosticos && Array.isArray(dados.diagnosticos)) {
-      setListaStorage(DIAGNOSTICOS_KEY, dados.diagnosticos);
-    }
-    if (dados.fichas && Array.isArray(dados.fichas)) {
-      setListaStorage(FICHAS_KEY, dados.fichas);
-    }
-
+    suprimirTransicaoOperacao = true;
     bancoDisponivel = true;
     sincronizacaoBancoAtiva = true;
+
+    sincronizarDadoBanco(STORAGE_KEY, dados.historico, setHistorico);
+    sincronizarDadoBanco(MULTAS_KEY, dados.multas);
+    sincronizarDadoBanco(ADVERTENCIAS_KEY, dados.advertencias);
+    sincronizarDadoBanco(AVARIAS_KEY, dados.avarias);
+    sincronizarDadoBanco(OCORRENCIAS_KEY, dados.ocorrencias);
+    sincronizarDadoBanco(MOTORISTAS_KEY, dados.motoristas);
+    sincronizarDadoBanco(MOTORISTAS_STATUS_KEY, dados.motoristasStatus);
+    sincronizarDadoBanco(VEICULOS_KEY, dados.veiculos);
+    sincronizarDadoBanco(TRAJETOS_KEY, dados.trajetos);
+    sincronizarDadoBanco(DIAGNOSTICOS_KEY, dados.diagnosticos);
+    sincronizarDadoBanco(FICHAS_KEY, dados.fichas, setControleFicha);
+    sincronizarDadoBanco(TELEMETRIA_KEY, dados.telemetria);
+
+    suprimirTransicaoOperacao = false;
+    atualizarInterfacesCompartilhadas();
     console.log('Dados carregados do banco com sucesso');
   } catch (error) {
+    suprimirTransicaoOperacao = false;
     bancoDisponivel = false;
     sincronizacaoBancoAtiva = false;
     console.error('Erro ao carregar dados do banco:', error);
   }
+}
+
+function dadoTemConteudo(dado) {
+  if (Array.isArray(dado)) return dado.length > 0;
+  if (dado && typeof dado === "object") return Object.keys(dado).length > 0;
+  return false;
+}
+
+function sincronizarDadoBanco(chave, remoto, setter = null) {
+  if (remoto === undefined || remoto === null) return;
+  const localRaw = localStorage.getItem(chave);
+  const local = localRaw ? JSON.parse(localRaw) : (Array.isArray(remoto) ? [] : {});
+
+  if (dadoTemConteudo(remoto) || !dadoTemConteudo(local)) {
+    if (setter) setter(remoto);
+    else setListaStorage(chave, Array.isArray(remoto) ? remoto : []);
+    return;
+  }
+
+  persistirListaBanco(chave, local);
 }
 
 function getHistorico() {
@@ -196,15 +241,39 @@ function getHistorico() {
 function setHistorico(hist) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
   persistirListaBanco(STORAGE_KEY, hist);
+  registrarTransicaoOperacao();
 }
 
 function getListaStorage(chave) {
-  return JSON.parse(localStorage.getItem(chave) || "[]");
+  try {
+    const valor = JSON.parse(localStorage.getItem(chave) || "[]");
+    if (Array.isArray(valor)) return valor;
+    if (valor && typeof valor === "object") return Object.values(valor);
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 function setListaStorage(chave, lista) {
   localStorage.setItem(chave, JSON.stringify(lista));
   persistirListaBanco(chave, lista);
+  registrarTransicaoOperacao();
+}
+
+function getControleFicha() {
+  const dados = JSON.parse(localStorage.getItem(FICHAS_KEY) || "{}");
+  if (Array.isArray(dados)) return { estoque: {}, requisicoes: dados };
+  return {
+    estoque: dados.estoque || {},
+    requisicoes: dados.requisicoes || []
+  };
+}
+
+function setControleFicha(dados) {
+  localStorage.setItem(FICHAS_KEY, JSON.stringify(dados));
+  persistirListaBanco(FICHAS_KEY, dados);
+  registrarTransicaoOperacao();
 }
 
 function persistirListaBanco(chave, lista) {
@@ -277,9 +346,9 @@ function importarBackup(event) {
       });
 
       recarregarInterfaceAposBackup();
-      alert('Backup importado com sucesso!');
+      mostrarMensagem('Backup importado com sucesso!', 'Backup');
     } catch (error) {
-      alert('Erro ao importar backup: arquivo inválido');
+      mostrarMensagem('Erro ao importar backup: arquivo inválido', 'Erro');
       console.error(error);
     }
   };
@@ -293,8 +362,107 @@ function recarregarInterfaceAposBackup() {
   }
 }
 
+function garantirModalMensagem() {
+  if (document.getElementById("app-message-modal")) return;
+  const modal = document.createElement("div");
+  modal.className = "modal-backdrop app-message-backdrop";
+  modal.id = "app-message-modal";
+  modal.setAttribute("aria-hidden", "true");
+  modal.innerHTML = `
+    <div class="modal-panel app-message-panel" role="dialog" aria-modal="true" aria-labelledby="app-message-title">
+      <div class="card-header">
+        <span class="card-title" id="app-message-title">Mensagem</span>
+        <button class="btn btn-sm app-message-close" type="button">Fechar</button>
+      </div>
+      <div class="app-message-body" id="app-message-body"></div>
+      <div class="modal-actions" id="app-message-actions"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function mostrarMensagem(mensagem, titulo = "Mensagem") {
+  garantirModalMensagem();
+  const modal = document.getElementById("app-message-modal");
+  const title = document.getElementById("app-message-title");
+  const body = document.getElementById("app-message-body");
+  const actions = document.getElementById("app-message-actions");
+  const close = modal.querySelector(".app-message-close");
+
+  title.textContent = titulo;
+  body.textContent = mensagem;
+  actions.innerHTML = '<button class="btn btn-sm btn-green" type="button" data-app-message-ok>OK</button>';
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+
+  const fechar = () => {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  };
+  close.onclick = fechar;
+  actions.querySelector("[data-app-message-ok]").onclick = fechar;
+}
+
+function confirmarAcao(mensagem, titulo = "Confirmar ação", textoConfirmar = "Excluir") {
+  garantirModalMensagem();
+  const modal = document.getElementById("app-message-modal");
+  const title = document.getElementById("app-message-title");
+  const body = document.getElementById("app-message-body");
+  const actions = document.getElementById("app-message-actions");
+  const close = modal.querySelector(".app-message-close");
+
+  title.textContent = titulo;
+  body.textContent = mensagem;
+  actions.innerHTML = `
+    <button class="btn btn-sm" type="button" data-app-message-cancel>Cancelar</button>
+    <button class="btn btn-sm btn-red" type="button" data-app-message-confirm>${textoConfirmar}</button>
+  `;
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+
+  return new Promise((resolve) => {
+    const fechar = (valor) => {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+      resolve(valor);
+    };
+    close.onclick = () => fechar(false);
+    actions.querySelector("[data-app-message-cancel]").onclick = () => fechar(false);
+    actions.querySelector("[data-app-message-confirm]").onclick = () => fechar(true);
+  });
+}
+
 function getMotoristas() {
-  return getListaStorage(MOTORISTAS_KEY);
+  const motoristas = getListaStorage(MOTORISTAS_KEY)
+    .map((motorista) => typeof motorista === "string" ? { nome: motorista } : motorista)
+    .filter((motorista) => motorista && motorista.nome);
+  if (motoristas.length) return motoristas;
+  return recuperarMotoristasDeRegistros();
+}
+
+function recuperarMotoristasDeRegistros() {
+  const nomes = new Set();
+  const fontes = [
+    getListaStorage(STORAGE_KEY),
+    getListaStorage(MULTAS_KEY),
+    getListaStorage(ADVERTENCIAS_KEY),
+    getListaStorage(AVARIAS_KEY),
+    getListaStorage(OCORRENCIAS_KEY),
+    getListaStorage(MOTORISTAS_STATUS_KEY),
+    getListaStorage(TELEMETRIA_KEY)
+  ];
+
+  fontes.flat().forEach((item) => {
+    const nome = item?.motorista || item?.nomeMotorista || item?.condutor || item?.driver;
+    if (nome && nome !== "Não informado" && nome !== "Nao informado") nomes.add(String(nome).trim());
+  });
+
+  const recuperados = Array.from(nomes)
+    .filter(Boolean)
+    .map((nome, index) => ({ id: `REC-${index + 1}`, nome, origem: "Registros existentes" }));
+
+  if (recuperados.length) setListaStorage(MOTORISTAS_KEY, recuperados);
+  return recuperados;
 }
 
 function getStatusMotoristas() {
@@ -311,12 +479,13 @@ function getTrajetos() {
 
 function preencherCadastrosCompartilhados() {
   preencherSelectMotoristas();
+  preencherSelectVeiculos();
   preencherSelectTrajetos();
 }
 
 function preencherSelectTrajetos() {
   const trajetos = getTrajetos();
-  document.querySelectorAll('select[id*="trajeto"]').forEach(select => {
+  document.querySelectorAll('select#trajeto-registro, select[data-trajetos="true"]').forEach(select => {
     const valorAtual = select.value;
     select.innerHTML = '<option value="">Selecione um trajeto</option>';
     trajetos.forEach(trajeto => {
@@ -332,6 +501,7 @@ function preencherSelectTrajetos() {
 function preencherSelectMotoristas() {
   const motoristas = getMotoristas();
   document.querySelectorAll('select[id*="motorista"]').forEach(select => {
+    if (select.id.includes("situacao") || select.id.includes("filtro")) return;
     const valorAtual = select.value;
     select.innerHTML = '<option value="">Selecione um motorista</option>';
     motoristas.forEach(motorista => {
@@ -342,4 +512,122 @@ function preencherSelectMotoristas() {
     });
     if (valorAtual) select.value = valorAtual;
   });
+}
+
+function preencherSelectVeiculos() {
+  const veiculos = getVeiculos();
+  document.querySelectorAll('select[id*="placa"], select[id*="veiculo"]').forEach((select) => {
+    if (select.id.includes("modelo") || select.id.includes("fab") || select.id.includes("trajeto") || select.id.includes("filtro")) return;
+    const valorAtual = select.value;
+    select.innerHTML = '<option value="">Selecione uma placa</option>';
+    veiculos.forEach((veiculo) => {
+      if (!veiculo.placa) return;
+      const option = document.createElement("option");
+      option.value = veiculo.placa;
+      option.textContent = veiculo.placa;
+      select.appendChild(option);
+    });
+    if (valorAtual) select.value = valorAtual;
+  });
+}
+
+function salvarMotoristaCompartilhado(nome) {
+  const nomeLimpo = (nome || "").trim();
+  if (!nomeLimpo) return false;
+
+  const motoristas = getMotoristas();
+  const jaExiste = motoristas.some((motorista) => motorista.nome.toLowerCase() === nomeLimpo.toLowerCase());
+  if (jaExiste) {
+    mostrarMensagem("Este motorista ja esta cadastrado.", "Atenção");
+    return false;
+  }
+
+  motoristas.push({
+    id: `MOT-${Date.now()}`,
+    nome: nomeLimpo,
+    criadoEm: new Date().toISOString()
+  });
+  setListaStorage(MOTORISTAS_KEY, motoristas);
+  atualizarInterfacesCompartilhadas();
+  return true;
+}
+
+function cadastrarMotorista() {
+  const modal = document.getElementById("motorista-modal");
+  const input = document.getElementById("motorista-novo-nome");
+  if (!modal || !input) {
+    const nome = prompt("Nome do motorista:");
+    if (nome && salvarMotoristaCompartilhado(nome)) atualizarInterfacesCompartilhadas();
+    return;
+  }
+  input.value = "";
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  setTimeout(() => input.focus(), 50);
+}
+
+function fecharModalMotorista() {
+  const modal = document.getElementById("motorista-modal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function salvarMotoristaModal() {
+  const input = document.getElementById("motorista-novo-nome");
+  const nome = input?.value.trim();
+  if (!nome) {
+    mostrarMensagem("Informe o nome do motorista.", "Atenção");
+    return;
+  }
+  if (salvarMotoristaCompartilhado(nome)) {
+    selecionarMotoristaNaTela(nome);
+    fecharModalMotorista();
+  }
+}
+
+async function excluirMotoristaSelecionado(selectId) {
+  const select = document.getElementById(selectId);
+  const nome = select?.value;
+  if (!nome) {
+    mostrarMensagem("Selecione um motorista para excluir.", "Atenção");
+    return;
+  }
+  if (!await confirmarAcao(`Excluir o motorista ${nome}?`)) return;
+
+  const motoristas = getMotoristas().filter((motorista) => motorista.nome !== nome);
+  setListaStorage(MOTORISTAS_KEY, motoristas);
+  atualizarInterfacesCompartilhadas();
+}
+
+async function excluirVeiculoSelecionado(selectId) {
+  const select = document.getElementById(selectId);
+  const placa = select?.value;
+  if (!placa) {
+    mostrarMensagem("Selecione uma placa para excluir.", "Atenção");
+    return;
+  }
+  if (!await confirmarAcao(`Excluir o veiculo ${placa}?`)) return;
+
+  const veiculos = getVeiculos().filter((veiculo) => (veiculo.placa || "").toUpperCase() !== placa.toUpperCase());
+  setListaStorage(VEICULOS_KEY, veiculos);
+  atualizarInterfacesCompartilhadas();
+}
+
+function atualizarInterfacesCompartilhadas() {
+  preencherSelectMotoristas();
+  preencherSelectVeiculos();
+  preencherSelectTrajetos();
+  if (typeof popularSelectTelemetria === "function") popularSelectTelemetria();
+  if (typeof renderizarCadastros === "function") renderizarCadastros();
+  if (typeof renderizarControleMotoristas === "function") renderizarControleMotoristas();
+  if (typeof preencherFiltrosControleFrota === "function") preencherFiltrosControleFrota();
+  if (typeof renderizarSituacaoVeiculos === "function") renderizarSituacaoVeiculos();
+}
+
+function selecionarMotoristaNaTela(nome) {
+  const selects = Array.from(document.querySelectorAll('select[id*="motorista"]'))
+    .filter((select) => !select.id.includes("situacao") && !select.id.includes("filtro"));
+  const selectPrincipal = selects.find((select) => select.offsetParent !== null) || selects[0];
+  if (selectPrincipal) selectPrincipal.value = nome;
 }

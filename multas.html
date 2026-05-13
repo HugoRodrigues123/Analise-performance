@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Controle de Multas - Frota</title>
-  <link rel="stylesheet" href="style.css?v=20260507-03">
+  <link rel="stylesheet" href="multas.css?v=20260511-02">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="comum.js?v=20260506-14" defer></script>
-  <script src="multas.js?v=20260506-14" defer></script>
+<script src="comum.js?v=20260512-01" defer></script>
+  <script src="multas.js?v=20260508-01" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -28,7 +28,6 @@
       <a class="btn btn-sm" href="situacao-veiculos.html">Controle de Frota</a>
       <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
-      <a class="btn btn-sm" href="avarias.html">Avarias</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
       <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
       <input type="file" id="multas-import" class="file-hidden" accept=".xlsx,.xls,.csv,.tsv,.json" onchange="importarPlanilhaMultas(event)">
@@ -97,7 +96,6 @@
           <label for="multa-motorista">Motorista</label>
           <div class="field-action">
             <select id="multa-motorista"></select>
-            <button class="btn btn-sm" type="button" onclick="cadastrarMotorista()">Novo</button>
             <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('multa-motorista')">Excluir</button>
           </div>
         </div>
@@ -105,7 +103,6 @@
           <label for="multa-placa">Placa</label>
           <div class="field-action">
             <select id="multa-placa"></select>
-            <button class="btn btn-sm" type="button" onclick="cadastrarVeiculoPrompt()">Cadastrar</button>
             <button class="btn btn-sm btn-red" type="button" onclick="excluirVeiculoSelecionado('multa-placa')">Excluir</button>
           </div>
         </div>
@@ -259,6 +256,15 @@
   </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 

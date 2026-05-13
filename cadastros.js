@@ -30,15 +30,16 @@ function salvarTrajeto() {
   const origem = valorCampo("trajeto-origem");
   const destino = valorCampo("trajeto-destino");
   if (!origem || !destino) {
-    alert("Informe origem e destino do trajeto.");
+    mostrarMensagem("Informe origem e destino do trajeto.", "Atenção");
     return;
   }
   const fab = valorCampo("trajeto-fab") || "vw";
   const nome = `${origem} - ${destino}`;
   const desempenho = valorCampo("trajeto-desempenho") || "Medio";
   const condicaoCarga = valorCampo("trajeto-carga") || "Carregado";
+  const composicao = valorCampo("trajeto-composicao") || "Vanderleia";
   const registro = {
-    id: `${normalizarChave(nome)}-${fab}-${normalizarChave(valorCampo("trajeto-modelo"))}`,
+    id: `${normalizarChave(nome)}-${fab}-${normalizarChave(valorCampo("trajeto-modelo"))}-${normalizarChave(composicao)}`,
     nome,
     clienteOrigem,
     clienteDestino,
@@ -46,6 +47,7 @@ function salvarTrajeto() {
     destino,
     desempenho,
     condicaoCarga,
+    composicao,
     criticidade: desempenho,
     fab,
     fabricante: FABRICANTES[fab],
@@ -80,7 +82,7 @@ function renderizarTrajetos() {
         <span class="ops-entry-title">${escapeHtml(labelTrajeto(t))}</span>
         <span class="status-pill">${escapeHtml(grauDesempenhoTrajeto(t))}</span>
       </div>
-      <div class="ops-entry-meta">${escapeHtml(t.origem ? `Origem: ${t.origem} - Destino: ${t.destino} - ${condicaoCargaTrajeto(t)}` : "Origem/destino nao informados")}</div>
+      <div class="ops-entry-meta">${escapeHtml(t.origem ? `Origem: ${t.origem} - Destino: ${t.destino} - ${condicaoCargaTrajeto(t)} - ${composicaoTrajeto(t)}` : "Origem/destino nao informados")}</div>
       <div class="ops-entry-meta">${escapeHtml(t.fabricante || FABRICANTES[t.fab] || "")} ${escapeHtml(t.modelo || "")} - media simulada ${Number(t.mediaSimulada || 0).toFixed(2)} km/L - pedal ${t.pedalIdeal || 0}/${t.pedalMedio || 0}/${t.pedalAgressivo || 0}%</div>
       <div class="ops-entry-actions"><button class="btn btn-sm btn-red" type="button" onclick="excluirTrajeto('${escapeAttr(t.id)}')">Excluir</button></div>
     </div>
@@ -101,8 +103,12 @@ function condicaoCargaTrajeto(t) {
   return t?.condicaoCarga || "Carregado";
 }
 
-function excluirTrajeto(id) {
-  if (!confirm("Tem certeza que deseja excluir este trajeto?")) return;
+function composicaoTrajeto(t) {
+  return t?.composicao || "Vanderleia";
+}
+
+async function excluirTrajeto(id) {
+  if (!await confirmarAcao("Tem certeza que deseja excluir este trajeto?")) return;
   const lista = getTrajetos();
   const filtrada = lista.filter((t) => t.id !== id);
   setListaStorage(TRAJETOS_KEY, filtrada);
@@ -118,15 +124,155 @@ function inicializarPaginaCadastros() {
   renderizarCadastros();
 }
 
+function salvarMotoristaNome(nome) {
+  const nomeLimpo = (nome || "").trim();
+  if (!nomeLimpo) return false;
+
+  const motoristas = getMotoristas();
+  const jaExiste = motoristas.some((m) => (m.nome || "").toLowerCase() === nomeLimpo.toLowerCase());
+  if (jaExiste) {
+    mostrarMensagem("Este motorista ja esta cadastrado.", "Atenção");
+    return false;
+  }
+
+  motoristas.push({
+    id: `MOT-${Date.now()}`,
+    nome: nomeLimpo,
+    criadoEm: new Date().toISOString()
+  });
+  setListaStorage(MOTORISTAS_KEY, motoristas);
+  atualizarInterfacesCompartilhadas();
+  return true;
+}
+
 function salvarMotoristaCadastro() {
   const input = document.getElementById("cadastro-motorista-nome");
   const nome = input?.value.trim();
   if (!nome) {
-    alert("Informe o nome do motorista.");
+    mostrarMensagem("Informe o nome do motorista.", "Atenção");
     return;
   }
-  salvarMotoristaNome(nome);
-  input.value = "";
+  if (salvarMotoristaNome(nome)) {
+    input.value = "";
+    renderizarCadastros();
+  }
+}
+
+async function excluirMotoristaSelecionado(selectId) {
+  const select = document.getElementById(selectId);
+  const nome = select?.value;
+  if (!nome) {
+    mostrarMensagem("Selecione um motorista para excluir.", "Atenção");
+    return;
+  }
+  if (!await confirmarAcao(`Excluir o motorista ${nome}?`)) return;
+
+  const motoristas = getMotoristas().filter((m) => m.nome !== nome);
+  setListaStorage(MOTORISTAS_KEY, motoristas);
+  preencherSelectMotoristas();
+  renderizarCadastros();
+}
+
+function preencherFabricantesFrota() {
+  const sel = document.getElementById("frota-fab");
+  if (!sel) return;
+  const atual = sel.value || "vw";
+  sel.innerHTML = Object.entries(FABRICANTES)
+    .map(([key, nome]) => `<option value="${escapeAttr(key)}">${escapeHtml(nome)}</option>`)
+    .join("");
+  sel.value = FABRICANTES[atual] ? atual : "vw";
+}
+
+function atualizarModelosFrota() {
+  const fab = valorCampo("frota-fab") || "vw";
+  const sel = document.getElementById("frota-modelo");
+  if (!sel) return;
+  const atual = sel.value;
+  const modelos = Object.keys(MODELOS[fab] || {});
+  sel.innerHTML = modelos.map((modelo) => `<option value="${escapeAttr(modelo)}">${escapeHtml(modelo)}</option>`).join("");
+  if (atual && modelos.includes(atual)) sel.value = atual;
+}
+
+function limparFormularioFrota() {
+  setValorCampo("cadastro-placa-select", "");
+  setValorCampo("frota-placa", "");
+  setValorCampo("frota-ano", "2022");
+  setValorCampo("frota-tracao", "6x2");
+  preencherFabricantesFrota();
+  atualizarModelosFrota();
+  preencherSelectVeiculosCadastro();
+}
+
+function salvarCadastroFrota() {
+  const placa = valorCampo("frota-placa").toUpperCase();
+  if (!placa) {
+    mostrarMensagem("Informe a placa do veiculo.", "Atenção");
+    return;
+  }
+
+  const registro = {
+    id: placa,
+    placa,
+    fab: valorCampo("frota-fab") || "vw",
+    fabricante: FABRICANTES[valorCampo("frota-fab")] || "",
+    modelo: valorCampo("frota-modelo"),
+    ano: valorCampo("frota-ano") || "2022",
+    tracao: valorCampo("frota-tracao") || "6x2",
+    atualizadoEm: new Date().toISOString()
+  };
+
+  const veiculos = getVeiculos();
+  const idx = veiculos.findIndex((v) => (v.placa || "").toUpperCase() === placa);
+  if (idx >= 0) veiculos[idx] = { ...veiculos[idx], ...registro };
+  else veiculos.push(registro);
+
+  setListaStorage(VEICULOS_KEY, veiculos);
+  preencherSelectVeiculosCadastro();
+  renderizarCadastros();
+  mostrarMensagem("Veiculo salvo com sucesso.", "Cadastro salvo");
+}
+
+function preencherSelectVeiculosCadastro() {
+  const veiculos = getVeiculos();
+  document.querySelectorAll('select[id*="placa"], select[id*="veiculo"]').forEach((select) => {
+    if (select.id.includes("modelo") || select.id.includes("fab") || select.id.includes("trajeto")) return;
+    const valorAtual = select.value;
+    select.innerHTML = '<option value="">Selecione uma placa</option>';
+    veiculos.forEach((veiculo) => {
+      const option = document.createElement("option");
+      option.value = veiculo.placa;
+      option.textContent = veiculo.placa;
+      select.appendChild(option);
+    });
+    if (valorAtual) select.value = valorAtual;
+  });
+}
+
+function preencherCadastroFrota(placa) {
+  const veiculo = getVeiculos().find((v) => (v.placa || "").toUpperCase() === (placa || "").toUpperCase());
+  if (!veiculo) return;
+
+  setValorCampo("frota-placa", veiculo.placa || "");
+  setValorCampo("frota-fab", veiculo.fab || "vw");
+  atualizarModelosFrota();
+  setValorCampo("frota-modelo", veiculo.modelo || "");
+  setValorCampo("frota-ano", veiculo.ano || "2022");
+  setValorCampo("frota-tracao", veiculo.tracao || "6x2");
+}
+
+async function excluirVeiculoSelecionado(selectId) {
+  const select = document.getElementById(selectId);
+  const placa = select?.value;
+  if (!placa) {
+    mostrarMensagem("Selecione uma placa para excluir.", "Atenção");
+    return;
+  }
+  if (!await confirmarAcao(`Excluir o veiculo ${placa}?`)) return;
+
+  const veiculos = getVeiculos().filter((v) => (v.placa || "").toUpperCase() !== placa.toUpperCase());
+  setListaStorage(VEICULOS_KEY, veiculos);
+  limparFormularioFrota();
+  preencherSelectVeiculosCadastro();
   renderizarCadastros();
 }
 
@@ -246,5 +392,6 @@ function contemBusca(texto, busca) {
 // Inicialização da página
 document.addEventListener("DOMContentLoaded", () => {
   instalarTransicaoNavegacao();
-  inicializar();
+  inicializarPaginaCadastros();
+  inicializarCadastroTrajetos();
 });

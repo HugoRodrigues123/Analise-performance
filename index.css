@@ -1,0 +1,85 @@
+@import url("./style.css?v=20260511-05");
+
+/* Estilos especificos da guia Performance */
+#nota-badge {
+  color: #fff;
+}
+
+#ni-fg,
+#ni-em,
+#ni-id,
+#ni-md,
+#ni-cr {
+  color: #fff !important;
+}
+
+.slider-name,
+.slider-input-row .unit,
+.accel-legend,
+.accel-legend span {
+  color: #fff !important;
+}
+
+input[type=range].green-track,
+input[type=range].amber-track,
+input[type=range].red-track {
+  background: rgba(255, 255, 255, .88) !important;
+}
+
+input[type=range].green-track::-webkit-slider-thumb {
+  background: var(--green) !important;
+  border-color: var(--green) !important;
+}
+
+input[type=range].amber-track::-webkit-slider-thumb {
+  background: var(--amber) !important;
+  border-color: var(--amber) !important;
+}
+
+input[type=range].red-track::-webkit-slider-thumb {
+  background: var(--red) !important;
+  border-color: var(--red) !important;
+}
+
+input[type=range].green-track::-moz-range-track,
+input[type=range].amber-track::-moz-range-track,
+input[type=range].red-track::-moz-range-track {
+  background: rgba(255, 255, 255, .88) !important;
+}
+
+input[type=range].green-track::-moz-range-thumb {
+  background: var(--green) !important;
+  border-color: var(--green) !important;
+}
+
+input[type=range].amber-track::-moz-range-thumb {
+  background: var(--amber) !important;
+  border-color: var(--amber) !important;
+}
+
+input[type=range].red-track::-moz-range-thumb {
+  background: var(--red) !important;
+  border-color: var(--red) !important;
+}
+
+.num-input.c-green {
+  background: rgba(29, 158, 117, .35) !important;
+  border-color: var(--green) !important;
+}
+
+.num-input.c-amber {
+  background: rgba(186, 117, 23, .38) !important;
+  border-color: var(--amber) !important;
+}
+
+.num-input.c-red {
+  background: rgba(163, 45, 45, .40) !important;
+  border-color: var(--red) !important;
+}
+
+.mech-desc,
+.mech-total {
+  color: #fff;
+}
+
+

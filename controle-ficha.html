@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Controle de Ficha</title>
-  <link rel="stylesheet" href="style.css?v=20260507-03">
+  <link rel="stylesheet" href="controle-ficha.css?v=20260512-01">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="comum.js?v=20260506-14" defer></script>
-  <script src="controle-ficha.js?v=20260506-14" defer></script>
+<script src="comum.js?v=20260512-01" defer></script>
+  <script src="controle-ficha.js?v=20260512-01" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -28,7 +28,6 @@
       <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
       <a class="btn btn-sm" href="multas.html">Multas</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
-      <a class="btn btn-sm" href="avarias.html">Avarias</a>
       <a class="btn btn-sm" href="registro-ocorrencia.html">Ocorrências</a>
       <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
     </div>
@@ -45,10 +44,19 @@
           <span class="card-title">Estoque</span>
           <button class="btn btn-sm btn-green" type="button" onclick="salvarEstoqueFicha()">Salvar Estoque</button>
         </div>
-        <div class="grid3">
-          <div class="field"><label for="estoque-fichas">Fichas em Estoque</label><input type="number" id="estoque-fichas" min="0" step="1"></div>
-          <div class="field"><label for="estoque-discos">Discos de Tacógrafo em Estoque</label><input type="number" id="estoque-discos" min="0" step="1"></div>
-          <div class="field"><label for="estoque-bobinas">Bobinas em Estoque</label><input type="number" id="estoque-bobinas" min="0" step="1"></div>
+        <div class="dashboard-grid ficha-stock-grid">
+          <div class="metric-card ficha-stock-card">
+            <label class="metric-lbl" for="estoque-fichas">Fichas em Estoque</label>
+            <input class="ficha-stock-input" type="number" id="estoque-fichas" min="0" step="1">
+          </div>
+          <div class="metric-card ficha-stock-card">
+            <label class="metric-lbl" for="estoque-discos">Discos de Tacógrafo em Estoque</label>
+            <input class="ficha-stock-input" type="number" id="estoque-discos" min="0" step="1">
+          </div>
+          <div class="metric-card ficha-stock-card">
+            <label class="metric-lbl" for="estoque-bobinas">Bobinas em Estoque</label>
+            <input class="ficha-stock-input" type="number" id="estoque-bobinas" min="0" step="1">
+          </div>
         </div>
       </div>
 
@@ -226,6 +234,15 @@
   </main>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 

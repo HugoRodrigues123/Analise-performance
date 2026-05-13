@@ -59,7 +59,7 @@ function salvarEdicaoMultaBusca() {
   const id = editId || String(Date.now());
   const idx = lista.findIndex((item) => item.id === editId);
   if (editId && idx < 0) {
-    alert("Registro de multa nao encontrado.");
+    mostrarMensagem("Registro de multa nao encontrado.", "Atenção");
     limparEdicaoMultaBusca();
     renderizarMultas();
     return;

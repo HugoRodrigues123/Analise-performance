@@ -1,0 +1,44 @@
+@import url("./style.css?v=20260511-05");
+
+/* Estilos especificos da guia Controle de Ficha */
+
+.ficha-stock-grid {
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+}
+
+.ficha-stock-card {
+  display: grid;
+  gap: 8px;
+  min-height: 98px;
+  align-content: center;
+}
+
+.ficha-stock-input {
+  width: 100%;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #fff !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  font-family: inherit;
+}
+
+.ficha-stock-input:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+.ficha-stock-input::-webkit-outer-spin-button,
+.ficha-stock-input::-webkit-inner-spin-button {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .ficha-stock-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

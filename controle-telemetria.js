@@ -1,11 +1,10 @@
-const TELEMETRIA_KEY = "simTelemetria";
-
 function getTelemetria() {
   return JSON.parse(localStorage.getItem(TELEMETRIA_KEY) || "[]");
 }
 
 function setTelemetria(lista) {
   localStorage.setItem(TELEMETRIA_KEY, JSON.stringify(lista));
+  if (typeof registrarTransicaoOperacao === "function") registrarTransicaoOperacao();
 }
 
 function popularSelectTelemetria() {

@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Ocorrência - Frota</title>
-  <link rel="stylesheet" href="style.css?v=20260507-03">
+  <link rel="stylesheet" href="registro-ocorrencia.css?v=20260511-02">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="comum.js?v=20260506-14" defer></script>
-  <script src="registro-ocorrencia.js?v=20260506-14" defer></script>
+<script src="comum.js?v=20260512-01" defer></script>
+  <script src="registro-ocorrencia.js?v=20260508-03" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -29,7 +29,6 @@
       <a class="btn btn-sm" href="ofensores.html">Diagnóstico</a>
       <a class="btn btn-sm" href="multas.html">Multas</a>
       <a class="btn btn-sm" href="advertencias.html">Advertências</a>
-      <a class="btn btn-sm" href="avarias.html">Avarias</a>
       <a class="btn btn-sm" href="controle-telemetria.html">Controle de Telemetria</a>
     </div>
   </div>
@@ -45,6 +44,14 @@
         <div class="field">
           <label for="ocorrencia-id">ID da ocorrência</label>
           <input type="text" id="ocorrencia-id" readonly placeholder="Gerado automaticamente">
+        </div>
+        <div class="field">
+          <label for="ocorrencia-tipo">Tipo da ocorrência</label>
+          <select id="ocorrencia-tipo">
+            <option value="Avaria">Avaria</option>
+            <option value="Sinistro">Sinistro</option>
+            <option value="Furto">Furto</option>
+          </select>
         </div>
         <div class="field">
           <label for="ocorrencia-boletim">Número do boletim de ocorrência</label>
@@ -64,7 +71,7 @@
         </div>
         <div class="field">
           <label for="ocorrencia-placa-carreta">Placa carreta</label>
-          <select id="ocorrencia-placa-carreta"></select>
+          <input type="text" id="ocorrencia-placa-carreta" placeholder="Digite a placa da carreta">
         </div>
         <div class="field">
           <label for="ocorrencia-produto">Produto</label>
@@ -106,6 +113,15 @@
   </main>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 

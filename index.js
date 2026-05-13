@@ -45,6 +45,7 @@ function inicializar() {
   document.getElementById("obs-data").value = isoHoje();
   preencherDatasOperacionais();
   atualizarModelos();
+  atualizarIndicadoresSliders();
   carregarHistorico();
   carregarControlesOperacionais();
   calcular();
@@ -90,19 +91,95 @@ function atualizarModelos() {
   const modSel = document.getElementById("modelo");
   modSel.innerHTML = "";
   if (MODELOS[fab]) {
-    Object.entries(MODELOS[fab]).forEach(([modelo, consumo]) => {
+    Object.keys(MODELOS[fab]).forEach((modelo) => {
       const opt = document.createElement("option");
       opt.value = modelo;
-      opt.textContent = `${modelo} (${consumo} km/L)`;
+      opt.textContent = modelo;
       modSel.appendChild(opt);
     });
   }
   calcular();
 }
 
+function carregarVeiculoPorPlaca() {
+  const placa = document.getElementById("placa-cadastro")?.value;
+  if (!placa) return;
+
+  const veiculo = getVeiculos().find((item) => (item.placa || "").toUpperCase() === placa.toUpperCase());
+  if (!veiculo) return;
+
+  document.getElementById("fab").value = veiculo.fab || "vw";
+  atualizarModelos();
+  document.getElementById("modelo").value = veiculo.modelo || "";
+  document.getElementById("ano").value = veiculo.ano || "2022";
+  document.getElementById("tracao").value = veiculo.tracao || "6x2";
+  calcular();
+}
+
+function limparIdentificacaoVeiculo() {
+  setValorCampo("motorista-cadastro", "");
+  setValorCampo("placa-cadastro", "");
+  setValorCampo("fab", "scania");
+  atualizarModelos();
+  setValorCampo("ano", "2022");
+  setValorCampo("tracao", "6x2");
+  calcular();
+}
+
 function numero(id) {
   const el = document.getElementById(id);
   return el ? Number.parseFloat(el.value) || 0 : 0;
+}
+
+function syncFromSlider(sliderId, inputId) {
+  const slider = document.getElementById(sliderId);
+  const input = document.getElementById(inputId);
+  if (!slider) return;
+  const valor = limitarPercentual(slider.value);
+  slider.value = valor;
+  if (input) input.value = valor;
+  atualizarIndicadorSlider(sliderId, valor);
+}
+
+function syncFromInput(inputId, sliderId) {
+  const input = document.getElementById(inputId);
+  const slider = document.getElementById(sliderId);
+  if (!input) return;
+  const valor = limitarPercentual(input.value);
+  input.value = valor;
+  if (slider) slider.value = valor;
+  atualizarIndicadorSlider(sliderId, valor);
+}
+
+function limitarPercentual(valor) {
+  const numero = Number.parseInt(valor, 10);
+  if (Number.isNaN(numero)) return 0;
+  return Math.max(0, Math.min(100, numero));
+}
+
+function atualizarIndicadorSlider(sliderId, valor) {
+  const mapa = {
+    faixaVerde: "v-fg",
+    embalo: "v-em",
+    acIdeal: "v-id",
+    acMed: "v-md",
+    acCrit: "v-cr"
+  };
+  const indicador = document.getElementById(mapa[sliderId]);
+  if (indicador) indicador.textContent = `${limitarPercentual(valor)}%`;
+}
+
+function atualizarIndicadoresSliders() {
+  [
+    ["faixaVerde", "ni-fg"],
+    ["embalo", "ni-em"],
+    ["acIdeal", "ni-id"],
+    ["acMed", "ni-md"],
+    ["acCrit", "ni-cr"]
+  ].forEach(([sliderId, inputId]) => {
+    const origem = document.getElementById(inputId) || document.getElementById(sliderId);
+    if (origem) atualizarIndicadorSlider(sliderId, origem.value);
+  });
 }
 
 function isoHoje() {
@@ -147,7 +224,7 @@ function salvarRegistro() {
   if (!window._ultimoResultado) return;
   const r = window._ultimoResultado;
   if (!r.temMediaReal) {
-    alert("Informe deslocamento real e consumo real para calcular e salvar a media.");
+    mostrarMensagem("Informe deslocamento real e consumo real para calcular e salvar a media.", "Atenção");
     return;
   }
   const dataISO = document.getElementById("obs-data").value || isoHoje();
@@ -206,7 +283,7 @@ function salvarRegistro() {
   atualizarDashboards();
   atualizarRankingMotoristas();
   atualizarComparativo();
-  alert(editId ? "Registro atualizado!" : "Registro salvo!");
+  mostrarMensagem(editId ? "Registro atualizado!" : "Registro salvo!", "Análise de Performance");
 }
 
 function editarRegistro(idx) {
@@ -239,6 +316,7 @@ function editarRegistro(idx) {
     if (cb) cb.checked = r.problemaIds?.includes(p.id) || false;
   });
 
+  atualizarIndicadoresSliders();
   calcular();
   document.getElementById("fab").scrollIntoView({ behavior: "smooth" });
 }
@@ -255,6 +333,7 @@ function limparFormulario() {
     const cb = document.getElementById("m_" + p.id);
     if (cb) cb.checked = false;
   });
+  atualizarIndicadoresSliders();
   calcular();
 }
 

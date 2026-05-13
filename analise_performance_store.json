@@ -1,0 +1,17 @@
+{
+  "simHistorico": [],
+  "simMultas": [],
+  "simAdvertencias": [],
+  "simAvarias": [],
+  "simOcorrencias": [],
+  "simMotoristas": [],
+  "simMotoristasStatus": [],
+  "simVeiculos": [],
+  "simTrajetos": [],
+  "simDiagnosticosImportados": [],
+  "simControleFichas": {
+    "estoque": {},
+    "requisicoes": []
+  },
+  "simTelemetria": []
+}

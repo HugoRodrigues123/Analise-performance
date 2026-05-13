@@ -57,7 +57,7 @@ function salvarRequisicaoFicha(tipo) {
   const unidade = valorCampo(config.unidade) || "Unidade";
   const tipoBobina = config.tipoBobina ? valorCampo(config.tipoBobina) : "";
   if (!dataISO || quantidade <= 0) {
-    alert("Informe a data e uma quantidade maior que zero.");
+    mostrarMensagem("Informe a data e uma quantidade maior que zero.", "Atenção");
     return;
   }
   const dados = getControleFicha();
@@ -85,7 +85,7 @@ function salvarRequisicaoFicha(tipo) {
   renderizarControleFicha();
 }
 
-function salvarBaixaFicha(tipo) {
+async function salvarBaixaFicha(tipo) {
   const config = {
     ficha: { label: "Ficha", prefixo: "BX-FIC", data: "baixa-ficha-data", quantidade: "baixa-ficha-quantidade", unidade: "baixa-ficha-unidade", identificador: "baixa-ficha-identificador" },
     disco: { label: "Disco de tacógrafo", prefixo: "BX-DIS", data: "baixa-disco-data", quantidade: "baixa-disco-quantidade", unidade: "baixa-disco-unidade", identificador: "baixa-disco-identificador" },
@@ -97,13 +97,13 @@ function salvarBaixaFicha(tipo) {
   const unidade = valorCampo(config.unidade) || "Unidade";
   const tipoBobina = config.tipoBobina ? valorCampo(config.tipoBobina) : "";
   if (!dataISO || quantidade <= 0) {
-    alert("Informe a data e uma quantidade maior que zero.");
+    mostrarMensagem("Informe a data e uma quantidade maior que zero.", "Atenção");
     return;
   }
   const dados = getControleFicha();
   const estoqueKey = { ficha: "fichas", disco: "discos", bobina: "bobinas" }[tipo];
   const saldoAtual = Number(dados.estoque?.[estoqueKey] || 0);
-  if (quantidade > saldoAtual && !confirm("A quantidade da baixa é maior que o estoque atual. Deseja continuar e zerar o estoque?")) return;
+  if (quantidade > saldoAtual && !await confirmarAcao("A quantidade da baixa é maior que o estoque atual. Deseja continuar e zerar o estoque?", "Confirmar baixa", "Continuar")) return;
   const identificador = gerarIdentificadorRequisicao(dados, tipo, config.prefixo);
   dados.estoque = dados.estoque || {};
   dados.estoque[estoqueKey] = Math.max(0, saldoAtual - quantidade);
@@ -154,8 +154,8 @@ function preencherIdentificadoresRequisicao() {
   });
 }
 
-function excluirRequisicaoFicha(id) {
-  if (!confirm("Excluir esta requisição?")) return;
+async function excluirRequisicaoFicha(id) {
+  if (!await confirmarAcao("Excluir esta requisição?")) return;
   const dados = getControleFicha();
   dados.requisicoes = (dados.requisicoes || []).filter((item) => item.id !== id);
   setControleFicha(dados);
@@ -211,5 +211,55 @@ function renderizarControleFicha() {
 // Inicialização da página
 document.addEventListener("DOMContentLoaded", () => {
   instalarTransicaoNavegacao();
-  inicializar();
+  inicializarControleFicha();
 });
+
+function isoHoje() {
+  const data = new Date();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+  return `${data.getFullYear()}-${mes}-${dia}`;
+}
+
+function valorCampo(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
+function setValorCampo(id, valor) {
+  const el = document.getElementById(id);
+  if (el) el.value = valor ?? "";
+}
+
+function numeroCampo(id) {
+  const valor = Number.parseFloat(valorCampo(id).replace(",", "."));
+  return Number.isFinite(valor) ? valor : 0;
+}
+
+function limparCampos(ids) {
+  ids.forEach((id) => setValorCampo(id, ""));
+}
+
+function formatarDataISO(dataISO) {
+  if (!dataISO) return "-";
+  const partes = String(dataISO).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (partes) return `${partes[3]}/${partes[2]}/${partes[1]}`;
+  return dataISO;
+}
+
+function contemBusca(texto, busca) {
+  return String(texto || "").toLowerCase().includes(String(busca || "").toLowerCase());
+}
+
+function escapeAttr(valor) {
+  return String(valor || "").replace(/"/g, "&quot;");
+}
+
+function escapeHtml(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
