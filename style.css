@@ -1,9 +1,9 @@
 :root {
   --bg: #F5F4F0;
-  --surface: rgba(255,255,255,0.46);
-  --surface2: rgba(240,239,233,0.32);
-  --border: rgba(0,0,0,0.10);
-  --border2: rgba(0,0,0,0.18);
+  --surface: rgba(7,22,36,0.50);
+  --surface2: rgba(7,22,36,0.28);
+  --border: rgba(255,255,255,0.20);
+  --border2: rgba(255,255,255,0.30);
   --text: #F7FBFF;
   --text2: #D7E7FF;
   --text3: #AFC5E7;
@@ -17,16 +17,16 @@
   --blue-bg: #E6F1FB;
   --radius: 8px;
   --radius-sm: 6px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow: 0 18px 44px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.18);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1A1A18;
-    --surface: rgba(37,37,35,0.46);
-    --surface2: rgba(46,46,43,0.34);
-    --border: rgba(255,255,255,0.09);
-    --border2: rgba(255,255,255,0.15);
+    --surface: rgba(7,22,36,0.50);
+    --surface2: rgba(7,22,36,0.28);
+    --border: rgba(255,255,255,0.20);
+    --border2: rgba(255,255,255,0.30);
     --text: #F7FBFF;
     --text2: #D7E7FF;
     --text3: #AFC5E7;
@@ -58,7 +58,7 @@ body::before {
   inset: 0;
   z-index: -2;
   background:
-    url("assets/fundo-neon-azul.png") center / cover no-repeat;
+    url("assets/fundo-praia-sundown.jpg") center / cover no-repeat;
   filter: none;
   transform: none;
 }
@@ -137,15 +137,15 @@ body::after {
   color: #fff;
 }
 .transition-icon-wrap {
-  width: 128px;
-  height: 128px;
+  width: 150px;
+  height: 150px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255,255,255,.26);
-  border-radius: 28px;
-  background: rgba(255,255,255,.10);
-  box-shadow: 0 22px 60px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.28);
-  backdrop-filter: blur(2px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 .transition-icon {
   width: 74px;
@@ -155,7 +155,7 @@ body::after {
   animation: transition-code-fade 1s ease-in-out infinite alternate;
 }
 .code-icon {
-  font-size: 32px;
+  font-size: 42px;
   font-family: 'Courier New', monospace;
   font-weight: bold;
   color: #fff;
@@ -188,7 +188,33 @@ body::after {
     transition-truck-fade 1s ease-in-out infinite alternate;
 }
 .transition-title {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: calc(100vw - 40px);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  text-shadow: 0 0 20px rgba(255,255,255,.42), 0 0 36px rgba(33,181,255,.42);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform-origin: center;
+}
+.page-transition.active .transition-title,
+.transition-title.transforming {
+  animation: transition-title-slide 1s cubic-bezier(.2,.8,.2,1) both;
 }
 @keyframes transition-truck-reveal {
   to { clip-path: inset(0 0 0 0); }
@@ -207,6 +233,32 @@ body::after {
 @keyframes transition-code-fade {
   from { opacity: .58; transform: scale(.94); }
   to { opacity: 1; transform: scale(1.04); }
+}
+@keyframes transition-title-slide {
+  0% {
+    opacity: 0;
+    transform: translateX(-120vw) skewX(-12deg);
+    filter: blur(8px);
+    letter-spacing: .22em;
+  }
+  28% {
+    opacity: 1;
+    transform: translateX(0) skewX(-8deg);
+    filter: blur(0);
+    letter-spacing: .16em;
+  }
+  72% {
+    opacity: 1;
+    transform: translateX(0) skewX(-8deg);
+    filter: blur(0);
+    letter-spacing: .16em;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(calc(100vw + 100% + 160px)) skewX(-12deg);
+    filter: blur(8px);
+    letter-spacing: .22em;
+  }
 }
 @keyframes transition-tear-left {
   from { transform: translateX(0) skewX(0deg); }
@@ -228,12 +280,39 @@ body::after {
   justify-content: space-between;
   gap: 16px;
   background:
-    linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,.42)),
-    url("assets/fundo-cabecalho-textura-preta.png") center / cover no-repeat;
-  backdrop-filter: blur(12px) saturate(1.12);
-  -webkit-backdrop-filter: blur(12px) saturate(1.12);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 0 var(--border);
+    linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.04)),
+    linear-gradient(rgba(0,0,0,.34), rgba(0,0,0,.22)),
+    url("assets/fundo-praia-sundown.jpg") center / cover no-repeat;
+  backdrop-filter: blur(18px) saturate(1.22);
+  -webkit-backdrop-filter: blur(18px) saturate(1.22);
+  border-bottom: 1px solid rgba(255,255,255,.22);
+  box-shadow: 0 16px 42px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.24);
+  transition: background .28s ease, border-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease;
+}
+.topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -38px;
+  height: 38px;
+  pointer-events: none;
+  background: linear-gradient(rgba(7,22,36,.30), rgba(7,22,36,0));
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+body.header-scrolled .topbar {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.02)),
+    linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.10)),
+    url("assets/fundo-praia-sundown.jpg") center / cover no-repeat;
+  border-bottom-color: rgba(255,255,255,.08);
+  box-shadow: 0 26px 54px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.20);
+  backdrop-filter: blur(22px) saturate(1.26);
+  -webkit-backdrop-filter: blur(22px) saturate(1.26);
+}
+body.header-scrolled .topbar::after {
+  opacity: 1;
 }
 .topbar-brand { display: flex; align-items: center; gap: 10px; min-width: 220px; }
 .topbar-brand svg { color: var(--green); flex-shrink: 0; }
@@ -256,15 +335,38 @@ body::after {
 .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
 
 .card, .chart-card {
-  background: var(--surface);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.04)),
+    var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px 18px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(12px) saturate(1.08);
-  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  backdrop-filter: blur(24px) saturate(1.22);
+  -webkit-backdrop-filter: blur(24px) saturate(1.22);
 }
-.chart-card { box-shadow: none; background: var(--surface2); }
+.chart-card {
+  box-shadow: var(--shadow);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.04)),
+    var(--surface2);
+}
+.metric-card,
+.inline-edit-panel,
+.result-panel,
+.hist-entry,
+.ops-entry,
+.dashboard-card,
+.compare-card,
+.modal-panel {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.035)),
+    rgba(7,22,36,.46);
+  border-color: rgba(255,255,255,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 14px 34px rgba(0,0,0,.14);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+}
 .card-header {
   display: flex;
   align-items: center;
@@ -940,9 +1042,21 @@ canvas { width: 100% !important; max-height: 320px; }
 .diagnostic-card,
 .stock-card,
 .request-card {
-  background: rgba(3,18,42,.58) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.035)),
+    rgba(7,22,36,.44) !important;
   border-color: rgba(255,255,255,.18) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 44px rgba(0,0,0,.16) !important;
+  backdrop-filter: blur(26px) saturate(1.22) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(1.22) !important;
+}
+
+.chart-card,
+.card .chart-card,
+.dashboard-grid.charts .card {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.025)),
+    rgba(7,22,36,.40) !important;
 }
 
 .card .card,
@@ -987,8 +1101,9 @@ canvas { width: 100% !important; max-height: 320px; }
   body::after { background: rgba(26,26,24,.34); }
   .topbar {
     background:
-      linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.46)),
-      url("assets/fundo-cabecalho-textura-preta.png") center / cover no-repeat;
+      linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.04)),
+      linear-gradient(rgba(0,0,0,.34), rgba(0,0,0,.22)),
+      url("assets/fundo-praia-sundown.jpg") center / cover no-repeat;
   }
   select, input[type=number], input[type=text], input[type=date], input[type=time], textarea,
   .btn {
@@ -1017,3 +1132,10 @@ canvas { width: 100% !important; max-height: 320px; }
   .metrics-grid { grid-template-columns: 1fr; }
   .hist-entry-header { flex-direction: column; gap: 2px; }
 }
+
+
+
+
+
+
+

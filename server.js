@@ -25,6 +25,7 @@ const AVARIAS_KEY = "simAvarias";
 const OCORRENCIAS_KEY = "simOcorrencias";
 const MOTORISTAS_KEY = "simMotoristas";
 const MOTORISTAS_STATUS_KEY = "simMotoristasStatus";
+const PARTICIPANTES_KEY = "simParticipantes";
 const VEICULOS_KEY = "simVeiculos";
 const TRAJETOS_KEY = "simTrajetos";
 const DIAGNOSTICOS_KEY = "simDiagnosticosImportados";
@@ -40,6 +41,7 @@ const STORAGE_KEYS = [
   OCORRENCIAS_KEY,
   MOTORISTAS_KEY,
   MOTORISTAS_STATUS_KEY,
+  PARTICIPANTES_KEY,
   VEICULOS_KEY,
   TRAJETOS_KEY,
   DIAGNOSTICOS_KEY,
@@ -56,6 +58,7 @@ const STORAGE_API_MAP = {
   [OCORRENCIAS_KEY]: "ocorrencias",
   [MOTORISTAS_KEY]: "motoristas",
   [MOTORISTAS_STATUS_KEY]: "motoristasStatus",
+  [PARTICIPANTES_KEY]: "participantes",
   [VEICULOS_KEY]: "veiculos",
   [TRAJETOS_KEY]: "trajetos",
   [DIAGNOSTICOS_KEY]: "diagnosticos",
@@ -289,6 +292,7 @@ function dadosConsolidados(banco) {
     ocorrencias: [],
     motoristas: [],
     motoristasStatus: [],
+    participantes: [],
     veiculos: [],
     trajetos: [],
     diagnosticos: [],

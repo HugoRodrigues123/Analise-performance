@@ -29,20 +29,9 @@ function alternarMovimentacaoFicha(modo) {
 
 function preencherFormularioEstoqueFicha() {
   const dados = getControleFicha();
-  setValorCampo("estoque-fichas", dados.estoque?.fichas || 0);
-  setValorCampo("estoque-discos", dados.estoque?.discos || 0);
-  setValorCampo("estoque-bobinas", dados.estoque?.bobinas || 0);
-}
-
-function salvarEstoqueFicha() {
-  const dados = getControleFicha();
-  dados.estoque = {
-    fichas: numeroCampo("estoque-fichas"),
-    discos: numeroCampo("estoque-discos"),
-    bobinas: numeroCampo("estoque-bobinas")
-  };
-  setControleFicha(dados);
-  renderizarControleFicha();
+  setTexto("estoque-fichas", Number(dados.estoque?.fichas || 0).toLocaleString("pt-BR"));
+  setTexto("estoque-discos", Number(dados.estoque?.discos || 0).toLocaleString("pt-BR"));
+  setTexto("estoque-bobinas", Number(dados.estoque?.bobinas || 0).toLocaleString("pt-BR"));
 }
 
 function salvarRequisicaoFicha(tipo) {
@@ -167,9 +156,9 @@ function renderizarControleFicha() {
   if (!container) return;
   const dados = getControleFicha();
   const estoque = dados.estoque || {};
-  setValorCampo("estoque-fichas", estoque.fichas || 0);
-  setValorCampo("estoque-discos", estoque.discos || 0);
-  setValorCampo("estoque-bobinas", estoque.bobinas || 0);
+  setTexto("estoque-fichas", Number(estoque.fichas || 0).toLocaleString("pt-BR"));
+  setTexto("estoque-discos", Number(estoque.discos || 0).toLocaleString("pt-BR"));
+  setTexto("estoque-bobinas", Number(estoque.bobinas || 0).toLocaleString("pt-BR"));
 
   const requisicoes = dados.requisicoes || [];
   const busca = valorCampo("ficha-busca-historico");
@@ -229,6 +218,11 @@ function valorCampo(id) {
 function setValorCampo(id, valor) {
   const el = document.getElementById(id);
   if (el) el.value = valor ?? "";
+}
+
+function setTexto(id, valor) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = valor ?? "";
 }
 
 function numeroCampo(id) {

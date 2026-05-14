@@ -40,13 +40,14 @@ const AVARIAS_KEY = "simAvarias";
 const OCORRENCIAS_KEY = "simOcorrencias";
 const MOTORISTAS_KEY = "simMotoristas";
 const MOTORISTAS_STATUS_KEY = "simMotoristasStatus";
+const PARTICIPANTES_KEY = "simParticipantes";
 const VEICULOS_KEY = "simVeiculos";
 const TRAJETOS_KEY = "simTrajetos";
 const DIAGNOSTICOS_KEY = "simDiagnosticosImportados";
 const FICHAS_KEY = "simControleFichas";
 const TELEMETRIA_KEY = "simTelemetria";
 const PLANEJAMENTOS_KEY = "simPlanejamentos";
-const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, OCORRENCIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY, TELEMETRIA_KEY, PLANEJAMENTOS_KEY];
+const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, OCORRENCIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, PARTICIPANTES_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY, TELEMETRIA_KEY, PLANEJAMENTOS_KEY];
 const PESOS_RANKING_MOTORISTA = {
   consumo: 35,
   gobrax: 35,
@@ -100,11 +101,33 @@ const pendenciasBanco = new Map();
 const TEMPO_TRANSICAO_GUIA_MS = 1000;
 let timerTransicaoOperacao = null;
 let suprimirTransicaoOperacao = false;
+const NOMES_GUIAS = {
+  "index.html": "Análise de Performance",
+  "cadastros.html": "Cadastros",
+  "controle-motoristas.html": "Controle de Motoristas",
+  "controle-ficha.html": "Controle de Ficha",
+  "situacao-veiculos.html": "Controle de Frota",
+  "ofensores.html": "Diagnóstico",
+  "multas.html": "Controle de Multas",
+  "advertencias.html": "Advertências e Suspensões",
+  "registro-ocorrencia.html": "Registro de Ocorrência",
+  "planejamentos.html": "Planejamentos",
+  "controle-telemetria.html": "Controle de Equipamentos"
+};
 
 document.addEventListener("DOMContentLoaded", iniciarAplicacao);
 
 async function iniciarAplicacao() {
+  instalarEfeitoRolagemCabecalho();
   await carregarDadosBanco();
+}
+
+function instalarEfeitoRolagemCabecalho() {
+  const atualizar = () => {
+    document.body.classList.toggle("header-scrolled", window.scrollY > 18);
+  };
+  atualizar();
+  window.addEventListener("scroll", atualizar, { passive: true });
 }
 
 // Funções compartilhadas
@@ -115,6 +138,7 @@ function instalarTransicaoNavegacao() {
     overlay.className = "page-transition";
     overlay.innerHTML = `
       <div class="transition-panel">
+        <div class="transition-title" aria-live="polite">${obterNomeGuiaAtual()}</div>
         <div class="transition-icon-wrap">
           <div class="code-icon">&lt;/&gt;</div>
         </div>
@@ -136,6 +160,9 @@ function instalarTransicaoNavegacao() {
       event.preventDefault();
       const overlay = document.getElementById("page-transition");
       if (overlay) {
+        definirTituloTransicao(obterNomeGuiaPorHref(link.href) || link.textContent);
+        overlay.classList.remove("active");
+        void overlay.offsetWidth;
         overlay.classList.add("active");
         setTimeout(() => {
           window.location.href = link.href;
@@ -153,6 +180,7 @@ function mostrarTransicaoOperacao(duracao = TEMPO_TRANSICAO_GUIA_MS) {
   const overlay = document.getElementById("page-transition");
   if (!overlay) return;
 
+  definirTituloTransicao(obterNomeGuiaAtual());
   overlay.classList.remove("active");
   void overlay.offsetWidth;
   overlay.classList.add("active");
@@ -181,6 +209,37 @@ function instalarTransicaoAcoes() {
   });
 }
 
+function obterNomeGuiaPorHref(href) {
+  try {
+    const url = new URL(href, window.location.href);
+    const arquivo = url.pathname.split("/").pop() || "index.html";
+    return NOMES_GUIAS[arquivo] || normalizarTituloGuia(arquivo.replace(/\.html$/i, ""));
+  } catch (err) {
+    return "";
+  }
+}
+
+function obterNomeGuiaAtual() {
+  const arquivo = window.location.pathname.split("/").pop() || "index.html";
+  return NOMES_GUIAS[arquivo] || normalizarTituloGuia(document.title || "Análise de Performance");
+}
+
+function normalizarTituloGuia(valor) {
+  return String(valor || "")
+    .replace(/\s*-\s*Frota\s*$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
+}
+
+function definirTituloTransicao(titulo) {
+  const el = document.querySelector("#page-transition .transition-title");
+  if (!el) return;
+  el.textContent = normalizarTituloGuia(titulo) || obterNomeGuiaAtual();
+  el.classList.remove("transforming");
+  void el.offsetWidth;
+  el.classList.add("transforming");
+}
+
 async function carregarDadosBanco() {
   try {
     const response = await fetch('/api/dados', { cache: 'no-store' });
@@ -198,6 +257,7 @@ async function carregarDadosBanco() {
     sincronizarDadoBanco(OCORRENCIAS_KEY, dados.ocorrencias);
     sincronizarDadoBanco(MOTORISTAS_KEY, dados.motoristas);
     sincronizarDadoBanco(MOTORISTAS_STATUS_KEY, dados.motoristasStatus);
+    sincronizarDadoBanco(PARTICIPANTES_KEY, dados.participantes);
     sincronizarDadoBanco(VEICULOS_KEY, dados.veiculos);
     sincronizarDadoBanco(TRAJETOS_KEY, dados.trajetos);
     sincronizarDadoBanco(DIAGNOSTICOS_KEY, dados.diagnosticos);
@@ -479,10 +539,17 @@ function getTrajetos() {
   return getListaStorage(TRAJETOS_KEY);
 }
 
+function getParticipantes() {
+  return getListaStorage(PARTICIPANTES_KEY)
+    .map((participante) => typeof participante === "string" ? { nome: participante, cargo: "" } : participante)
+    .filter((participante) => participante && participante.nome);
+}
+
 function preencherCadastrosCompartilhados() {
   preencherSelectMotoristas();
   preencherSelectVeiculos();
   preencherSelectTrajetos();
+  preencherSelectParticipantes();
 }
 
 function preencherSelectTrajetos() {
@@ -530,6 +597,25 @@ function preencherSelectVeiculos() {
       select.appendChild(option);
     });
     if (valorAtual) select.value = valorAtual;
+  });
+}
+
+function preencherSelectParticipantes() {
+  const participantes = getParticipantes();
+  document.querySelectorAll('select[data-participantes="true"]').forEach((select) => {
+    const valoresAtuais = Array.from(select.selectedOptions || []).map((option) => option.value);
+    select.innerHTML = '<option value="">Selecione um participante</option>' + (participantes.length
+      ? participantes.map((participante) => {
+          const label = participante.cargo ? `${participante.nome} - ${participante.cargo}` : participante.nome;
+          return `<option value="${escapeAttr(participante.nome)}">${escapeHtml(label)}</option>`;
+        }).join("")
+      : '<option value="" disabled>Nenhum participante cadastrado</option>');
+
+    if (valoresAtuais.length) {
+      Array.from(select.options).forEach((option) => {
+        option.selected = valoresAtuais.includes(option.value);
+      });
+    }
   });
 }
 
@@ -620,6 +706,7 @@ function atualizarInterfacesCompartilhadas() {
   preencherSelectMotoristas();
   preencherSelectVeiculos();
   preencherSelectTrajetos();
+  preencherSelectParticipantes();
   if (typeof renderizarTrajetos === "function") renderizarTrajetos();
   if (typeof popularSelectTelemetria === "function") popularSelectTelemetria();
   if (typeof popularSelectsEquipamentos === "function") popularSelectsEquipamentos();
@@ -628,6 +715,7 @@ function atualizarInterfacesCompartilhadas() {
   if (typeof renderizarControleMotoristas === "function") renderizarControleMotoristas();
   if (typeof preencherFiltrosControleFrota === "function") preencherFiltrosControleFrota();
   if (typeof renderizarSituacaoVeiculos === "function") renderizarSituacaoVeiculos();
+  if (typeof recarregarPlanejamentos === "function") recarregarPlanejamentos();
 }
 
 function selecionarMotoristaNaTela(nome) {

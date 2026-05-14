@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastros</title>
-  <link rel="stylesheet" href="cadastros.css?v=20260511-02">
+  <link rel="stylesheet" href="cadastros.css?v=20260514-01">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="comum.js?v=20260513-02" defer></script>
-  <script src="cadastros.js?v=20260511-01" defer></script>
+<script src="comum.js?v=20260514-06" defer></script>
+  <script src="cadastros.js?v=20260514-01" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -49,6 +49,10 @@
           <div class="metric-lbl">Veículos cadastrados</div>
           <div class="metric-val"><span id="cad-kpi-veiculos">0</span></div>
         </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Participantes cadastrados</div>
+          <div class="metric-val"><span id="cad-kpi-participantes">0</span></div>
+        </div>
       </div>
 
       <div class="dashboard-grid charts">
@@ -68,6 +72,23 @@
                 <select id="cadastro-motorista-select"></select>
                 <button class="btn btn-sm btn-red" type="button" onclick="excluirMotoristaSelecionado('cadastro-motorista-select')">Excluir</button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-edit-panel">
+          <div class="card-header">
+            <span class="card-title">Cadastro de Participantes</span>
+            <button class="btn btn-sm btn-green" type="button" onclick="salvarParticipanteCadastro()">Salvar Participante</button>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="cadastro-participante-nome">Nome do participante</label>
+              <input type="text" id="cadastro-participante-nome" placeholder="Ex: Maria Souza">
+            </div>
+            <div class="field">
+              <label for="cadastro-participante-cargo">Cargo</label>
+              <input type="text" id="cadastro-participante-cargo" placeholder="Ex: Coordenadora de Frota">
             </div>
           </div>
         </div>
@@ -117,88 +138,21 @@
           </div>
           <div id="cad-lista-veiculos" class="ops-list cad-scroll-list"></div>
         </div>
-      </div>
-
-      <div class="inline-edit-panel spaced">
-        <div class="card-header">
-          <span class="card-title">Cadastro de Trajetos</span>
-          <button class="btn btn-sm btn-green" type="button" onclick="salvarTrajeto()">Salvar Trajeto</button>
+        <div class="inline-edit-panel">
+          <div class="card-header"><span class="card-title">Participantes cadastrados</span></div>
+          <div class="field">
+            <label for="cad-busca-participante">Buscar participante</label>
+            <input type="text" id="cad-busca-participante" placeholder="Nome ou cargo" oninput="renderizarCadastros()">
+          </div>
+          <div id="cad-lista-participantes" class="ops-list cad-scroll-list"></div>
         </div>
-        <div class="ops-grid">
-          <div class="field">
-            <label for="trajeto-cliente-origem">Cliente Origem</label>
-            <input type="text" id="trajeto-cliente-origem" placeholder="Ex: Empresa A">
-          </div>
-          <div class="field">
-            <label for="trajeto-cliente-destino">Cliente Destino</label>
-            <input type="text" id="trajeto-cliente-destino" placeholder="Ex: Empresa B">
-          </div>
-          <div class="field">
-            <label for="trajeto-origem">Cidade Origem</label>
-            <input type="text" id="trajeto-origem" placeholder="Ex: CD Sao Paulo">
-          </div>
-          <div class="field">
-            <label for="trajeto-destino">Cidade Destino</label>
-            <input type="text" id="trajeto-destino" placeholder="Ex: Interior SP">
-          </div>
-          <div class="field">
-            <label for="trajeto-desempenho">Grau de desempenho</label>
-            <select id="trajeto-desempenho">
-              <option value="Bom">Bom</option>
-              <option value="Medio">Medio</option>
-              <option value="Critico">Critico</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="trajeto-carga">Condicao de carga</label>
-            <select id="trajeto-carga">
-              <option value="Carregado">Carregado</option>
-              <option value="Vazio">Vazio</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="trajeto-composicao">Tipo de composicao</label>
-            <select id="trajeto-composicao">
-              <option value="Vanderleia">Vanderleia</option>
-              <option value="Rodotrem">Rodotrem</option>
-              <option value="Veiculos pequenos">Veiculos pequenos</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="trajeto-fab">Fabricante</label>
-            <select id="trajeto-fab" onchange="atualizarModelosTrajeto()"></select>
-          </div>
-          <div class="field">
-            <label for="trajeto-modelo">Modelo</label>
-            <select id="trajeto-modelo"></select>
-          </div>
-          <div class="field">
-            <label for="trajeto-media">Media simulada</label>
-            <input type="number" id="trajeto-media" min="0" step="0.01" placeholder="Ex: 2.75">
-          </div>
-          <div class="field">
-            <label for="trajeto-km-carregado">Km carregado padrao</label>
-            <input type="number" id="trajeto-km-carregado" min="0" step="10" placeholder="Ex: 4200">
-          </div>
-          <div class="field">
-            <label for="trajeto-pedal-ideal">Pedal ideal (%)</label>
-            <input type="number" id="trajeto-pedal-ideal" min="0" max="100" step="1" value="60">
-          </div>
-          <div class="field">
-            <label for="trajeto-pedal-medio">Pedal medio (%)</label>
-            <input type="number" id="trajeto-pedal-medio" min="0" max="100" step="1" value="30">
-          </div>
-          <div class="field">
-            <label for="trajeto-pedal-agressivo">Pedal agressivo (%)</label>
-            <input type="number" id="trajeto-pedal-agressivo" min="0" max="100" step="1" value="10">
-          </div>
-        </div>
-        <div id="trajetos-lista" class="ops-list"></div>
       </div>
     </section>
   </main>
 </body>
 </html>
+
+
 
 
 

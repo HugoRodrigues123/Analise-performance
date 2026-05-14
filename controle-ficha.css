@@ -1,4 +1,4 @@
-@import url("./style.css?v=20260511-05");
+@import url("./style.css?v=20260514-09");
 
 /* Estilos especificos da guia Controle de Ficha */
 
@@ -13,12 +13,8 @@
   align-content: center;
 }
 
-.ficha-stock-input {
+.ficha-stock-value {
   width: 100%;
-  padding: 0 !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
   color: #fff !important;
   font-size: 30px !important;
   line-height: 1 !important;
@@ -26,14 +22,36 @@
   font-family: inherit;
 }
 
-.ficha-stock-input:focus {
-  outline: none;
-  box-shadow: none !important;
+#ficha-quantidade,
+#bobina-quantidade,
+#disco-quantidade {
+  min-height: 46px;
+  padding: 10px 14px 10px 42px !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 16px 50%, rgba(255,255,255,.42) 0 4px, transparent 5px),
+    linear-gradient(135deg, rgba(255,255,255,.20), rgba(255,255,255,.06)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 10px 24px rgba(0,0,0,.16) !important;
+  color: #fff !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  letter-spacing: .02em;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
 }
 
-.ficha-stock-input::-webkit-outer-spin-button,
-.ficha-stock-input::-webkit-inner-spin-button {
-  margin: 0;
+#ficha-quantidade:focus,
+#bobina-quantidade:focus,
+#disco-quantidade:focus {
+  border-color: rgba(255,255,255,.58) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 0 0 4px rgba(255,255,255,.14), 0 14px 30px rgba(0,0,0,.20) !important;
+  transform: translateY(-1px);
+}
+
+#ficha-quantidade::placeholder,
+#bobina-quantidade::placeholder,
+#disco-quantidade::placeholder {
+  color: rgba(255,255,255,.58);
 }
 
 @media (max-width: 760px) {
@@ -41,4 +59,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+
+
+
 

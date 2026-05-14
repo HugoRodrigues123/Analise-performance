@@ -173,6 +173,46 @@ async function excluirMotoristaSelecionado(selectId) {
   renderizarCadastros();
 }
 
+function salvarParticipanteCadastro() {
+  const nome = valorCampo("cadastro-participante-nome");
+  const cargo = valorCampo("cadastro-participante-cargo");
+  if (!nome) {
+    mostrarMensagem("Informe o nome do participante.", "Atenção");
+    return;
+  }
+
+  const participantes = getParticipantes();
+  const jaExiste = participantes.some((p) => (p.nome || "").toLowerCase() === nome.toLowerCase());
+  if (jaExiste) {
+    mostrarMensagem("Este participante ja esta cadastrado.", "Atenção");
+    return;
+  }
+
+  participantes.push({
+    id: `PART-${Date.now()}`,
+    nome,
+    cargo,
+    criadoEm: new Date().toISOString()
+  });
+  setListaStorage(PARTICIPANTES_KEY, participantes);
+  setValorCampo("cadastro-participante-nome", "");
+  setValorCampo("cadastro-participante-cargo", "");
+  atualizarInterfacesCompartilhadas();
+  renderizarCadastros();
+  mostrarMensagem("Participante salvo com sucesso.", "Cadastro salvo");
+}
+
+async function removerParticipanteCadastro(id) {
+  const participante = getParticipantes().find((p) => p.id === id || p.nome === id);
+  if (!participante) return;
+  if (!await confirmarAcao(`Excluir o participante ${participante.nome}?`)) return;
+
+  const participantes = getParticipantes().filter((p) => p.id !== participante.id && p.nome !== participante.nome);
+  setListaStorage(PARTICIPANTES_KEY, participantes);
+  atualizarInterfacesCompartilhadas();
+  renderizarCadastros();
+}
+
 function preencherFabricantesFrota() {
   const sel = document.getElementById("frota-fab");
   if (!sel) return;
@@ -290,17 +330,24 @@ function renderizarCadastros() {
   if (!container) return;
   const motoristas = getMotoristas();
   const veiculos = getVeiculos();
+  const participantes = getParticipantes();
   const buscaMotorista = valorCampo("cad-busca-motorista");
   const buscaVeiculo = valorCampo("cad-busca-veiculo");
+  const buscaParticipante = valorCampo("cad-busca-participante");
   const motoristasFiltrados = motoristas.filter((m) => !buscaMotorista || contemBusca(m.nome, buscaMotorista));
   const veiculosFiltrados = veiculos.filter((v) => {
     if (!buscaVeiculo) return true;
     return contemBusca(`${v.placa || ""} ${FABRICANTES[v.fab] || v.fabricante || ""} ${v.modelo || ""} ${v.ano || ""} ${v.tracao || ""}`, buscaVeiculo);
   });
+  const participantesFiltrados = participantes.filter((p) => {
+    if (!buscaParticipante) return true;
+    return contemBusca(`${p.nome || ""} ${p.cargo || ""}`, buscaParticipante);
+  });
   const motoristasVisiveis = motoristasFiltrados;
   const veiculosVisiveis = veiculosFiltrados;
   setTexto("cad-kpi-motoristas", motoristas.length);
   setTexto("cad-kpi-veiculos", veiculos.length);
+  setTexto("cad-kpi-participantes", participantes.length);
 
   const listaMotoristas = document.getElementById("cad-lista-motoristas");
   if (listaMotoristas) {
@@ -328,6 +375,19 @@ function renderizarCadastros() {
         <div class="ops-entry-meta">${escapeHtml(FABRICANTES[v.fab] || v.fabricante || "Fabricante nao informado")} ${escapeHtml(v.modelo || "Modelo nao informado")} - ${escapeHtml(v.ano || "Ano nao informado")} - ${escapeHtml(v.tracao || "Tracao nao informada")}</div>
       </div>
     `).join("") : '<div class="ops-empty">Nenhum veículo encontrado.</div>';
+  }
+
+  const listaParticipantes = document.getElementById("cad-lista-participantes");
+  if (listaParticipantes) {
+    listaParticipantes.innerHTML = participantesFiltrados.length ? participantesFiltrados.map((p) => `
+      <div class="ops-entry">
+        <div class="ops-entry-head">
+          <span class="ops-entry-title">${escapeHtml(p.nome)}</span>
+          <button class="btn btn-sm btn-red" type="button" onclick="removerParticipanteCadastro('${escapeAttr(p.id || p.nome)}')">Excluir</button>
+        </div>
+        <div class="ops-entry-meta">${escapeHtml(p.cargo || "Cargo nao informado")}</div>
+      </div>
+    `).join("") : '<div class="ops-empty">Nenhum participante encontrado.</div>';
   }
 }
 
@@ -393,5 +453,4 @@ function contemBusca(texto, busca) {
 document.addEventListener("DOMContentLoaded", () => {
   instalarTransicaoNavegacao();
   inicializarPaginaCadastros();
-  inicializarCadastroTrajetos();
 });

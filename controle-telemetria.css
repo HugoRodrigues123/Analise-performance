@@ -1,4 +1,4 @@
-@import url("./style.css?v=20260511-05");
+@import url("./style.css?v=20260514-09");
 
 .equipamentos-page {
   max-width: 1480px;
@@ -13,8 +13,12 @@
 .equipment-card {
   border: 1px solid rgba(255,255,255,.18);
   border-radius: var(--radius);
-  background: rgba(3,18,42,.58);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.035)),
+    rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 14px 34px rgba(0,0,0,.14);
+  backdrop-filter: blur(16px) saturate(1.14);
+  -webkit-backdrop-filter: blur(16px) saturate(1.14);
   padding: 14px;
 }
 
@@ -83,5 +87,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+
+
+
 
 

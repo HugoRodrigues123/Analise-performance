@@ -16,10 +16,15 @@ let planejamentoAtual = criarPlanejamentoVazio();
 let nodeSelecionado = null;
 let conexaoOrigem = null;
 let dragState = null;
+let participantesAtaAtual = [];
+let planejamentoFoiInicializado = false;
 
 function inicializarPlanejamentos() {
+  preencherSelectParticipantes();
+  carregarPlanejamentoInicial();
   preencherListaPlanejamentos();
   renderizarPlanejamento();
+  planejamentoFoiInicializado = true;
 }
 
 function criarPlanejamentoVazio(tipo = "mindmap") {
@@ -42,6 +47,44 @@ function getPlanejamentos() {
 
 function setPlanejamentos(lista) {
   setListaStorage(PLANEJAMENTOS_KEY, lista);
+}
+
+function normalizarPlanejamento(item) {
+  return {
+    ...criarPlanejamentoVazio(item?.tipo || "mindmap"),
+    ...item,
+    nodes: Array.isArray(item?.nodes) ? item.nodes : [],
+    links: Array.isArray(item?.links) ? item.links : [],
+    atas: Array.isArray(item?.atas) ? item.atas : []
+  };
+}
+
+function carregarPlanejamentoInicial() {
+  const lista = getPlanejamentos();
+  if (!lista.length) return;
+  const selecionado = lista.find((item) => item.id === planejamentoAtual.id) || lista[0];
+  planejamentoAtual = normalizarPlanejamento(selecionado);
+  nodeSelecionado = planejamentoAtual.nodes[0]?.id || null;
+  conexaoOrigem = null;
+}
+
+function recarregarPlanejamentos() {
+  preencherSelectParticipantes();
+  const lista = getPlanejamentos();
+  if (!lista.length) {
+    preencherListaPlanejamentos();
+    renderizarAtasReuniao();
+    return;
+  }
+
+  const existeAtual = lista.some((item) => item.id === planejamentoAtual.id);
+  if (!planejamentoFoiInicializado || !existeAtual || !planejamentoAtual.atas?.length) {
+    carregarPlanejamentoInicial();
+    preencherFormularioPlanejamento();
+  }
+  preencherListaPlanejamentos();
+  renderizarPlanejamento();
+  renderizarAtasReuniao();
 }
 
 function preencherListaPlanejamentos() {
@@ -71,13 +114,7 @@ function carregarPlanejamentoSelecionado() {
   }
   const item = getPlanejamentos().find((plan) => plan.id === id);
   if (!item) return;
-  planejamentoAtual = {
-    ...criarPlanejamentoVazio(item.tipo || "mindmap"),
-    ...item,
-    nodes: Array.isArray(item.nodes) ? item.nodes : [],
-    links: Array.isArray(item.links) ? item.links : [],
-    atas: Array.isArray(item.atas) ? item.atas : []
-  };
+  planejamentoAtual = normalizarPlanejamento(item);
   nodeSelecionado = planejamentoAtual.nodes[0]?.id || null;
   conexaoOrigem = null;
   preencherFormularioPlanejamento();
@@ -354,6 +391,7 @@ function salvarAtaReuniao() {
   const data = valorCampo("ata-data");
   const titulo = valorCampo("ata-titulo");
   const conteudos = valorCampo("ata-conteudos");
+  const participantes = participantesAtaSelecionados();
   if (!data || !titulo || !conteudos) {
     mostrarMensagem("Informe a data, o título e os conteúdos abordados.", "Ata de Reunião");
     return;
@@ -364,9 +402,10 @@ function salvarAtaReuniao() {
     id: `ata_${Date.now()}`,
     data,
     titulo,
-    participantes: valorCampo("ata-participantes"),
+    participantes,
+    execucao: "Não",
+    dataExecucao: "",
     conteudos,
-    acoes: valorCampo("ata-acoes"),
     criadoEm: new Date().toISOString()
   });
 
@@ -377,9 +416,8 @@ function salvarAtaReuniao() {
 
 function limparAtaReuniao(renderizar = true) {
   setValorCampo("ata-titulo", "");
-  setValorCampo("ata-participantes", "");
+  limparParticipantesAta();
   setValorCampo("ata-conteudos", "");
-  setValorCampo("ata-acoes", "");
   preencherDataAta();
   if (renderizar) renderizarAtasReuniao();
 }
@@ -405,13 +443,23 @@ function renderizarAtasReuniao() {
       <div class="meeting-entry-head">
         <div>
           <strong>${escapeHtml(ata.titulo)}</strong>
-          <span>${formatarData(ata.data)}${ata.participantes ? ` - ${escapeHtml(ata.participantes)}` : ""}</span>
+          <span>${formatarData(ata.data)}${formatarParticipantesAta(ata.participantes) ? ` - ${escapeHtml(formatarParticipantesAta(ata.participantes))}` : ""}</span>
         </div>
         <button class="btn btn-sm btn-red" type="button" onclick="excluirAtaReuniao('${escapeAttr(ata.id)}')">Excluir</button>
       </div>
       <div class="meeting-entry-body">
+        <div class="meeting-execution-row">
+          <b>Execução:</b>
+          <div class="fleet-toggle-group meeting-execution-toggle">
+            <button class="fleet-toggle ok ${(ata.execucao || "Não") === "Sim" ? "active" : ""}" type="button" onclick="atualizarExecucaoAta('${escapeAttr(ata.id)}','Sim')">Sim</button>
+            <button class="fleet-toggle bad ${(ata.execucao || "Não") === "Não" ? "active" : ""}" type="button" onclick="atualizarExecucaoAta('${escapeAttr(ata.id)}','Não')">Não</button>
+          </div>
+          <label class="meeting-execution-date">
+            Data execução
+            <input type="date" value="${escapeAttr(ata.dataExecucao || "")}" onchange="atualizarDataExecucaoAta('${escapeAttr(ata.id)}', this.value)">
+          </label>
+        </div>
         <div><b>Conteúdos:</b><br>${escapeHtml(ata.conteudos).replace(/\n/g, "<br>")}</div>
-        ${ata.acoes ? `<div><b>Ações:</b><br>${escapeHtml(ata.acoes).replace(/\n/g, "<br>")}</div>` : ""}
       </div>
     </div>
   `).join("");
@@ -420,6 +468,63 @@ function renderizarAtasReuniao() {
 function preencherDataAta() {
   const data = document.getElementById("ata-data");
   if (data && !data.value) data.value = new Date().toISOString().slice(0, 10);
+}
+
+function participantesAtaSelecionados() {
+  return [...participantesAtaAtual];
+}
+
+function limparParticipantesAta() {
+  participantesAtaAtual = [];
+  setValorCampo("ata-participantes", "");
+  renderizarParticipantesAtaSelecionados();
+}
+
+function formatarParticipantesAta(participantes) {
+  if (Array.isArray(participantes)) return participantes.join(", ");
+  return participantes || "";
+}
+
+function adicionarParticipanteAta() {
+  const nome = valorCampo("ata-participantes");
+  if (!nome || participantesAtaAtual.includes(nome)) return;
+  participantesAtaAtual.push(nome);
+  setValorCampo("ata-participantes", "");
+  renderizarParticipantesAtaSelecionados();
+}
+
+function removerParticipanteAta(nome) {
+  participantesAtaAtual = participantesAtaAtual.filter((item) => item !== nome);
+  renderizarParticipantesAtaSelecionados();
+}
+
+function renderizarParticipantesAtaSelecionados() {
+  const destino = document.getElementById("ata-participantes-selecionados");
+  if (!destino) return;
+  destino.innerHTML = participantesAtaAtual.length ? participantesAtaAtual.map((nome) => `
+    <span class="selected-participant">
+      ${escapeHtml(nome)}
+      <button type="button" onclick="removerParticipanteAta('${escapeAttr(nome)}')" aria-label="Remover ${escapeAttr(nome)}">×</button>
+    </span>
+  `).join("") : '<span class="selected-participants-empty">Nenhum participante selecionado</span>';
+}
+
+function atualizarExecucaoAta(id, valor) {
+  planejamentoAtual.atas = (planejamentoAtual.atas || []).map((ata) => {
+    if (ata.id !== id) return ata;
+    return { ...ata, execucao: valor };
+  });
+  renderizarAtasReuniao();
+  salvarPlanejamento();
+}
+
+function atualizarDataExecucaoAta(id, valor) {
+  planejamentoAtual.atas = (planejamentoAtual.atas || []).map((ata) => {
+    if (ata.id !== id) return ata;
+    return { ...ata, dataExecucao: valor };
+  });
+  renderizarAtasReuniao();
+  salvarPlanejamento();
 }
 
 function getNode(id) {
