@@ -5,10 +5,10 @@ CREATE DATABASE IF NOT EXISTS analise_performance
 -- Se o usuario root do MySQL/MariaDB usar autenticacao do Windows/GSSAPI,
 -- crie um usuario proprio para o sistema e configure o .env com esses dados.
 -- Ajuste a senha antes de executar em producao:
---
--- CREATE USER IF NOT EXISTS 'analise_app'@'%' IDENTIFIED BY 'troque_esta_senha';
--- GRANT ALL PRIVILEGES ON analise_performance.* TO 'analise_app'@'%';
--- FLUSH PRIVILEGES;
+
+CREATE USER IF NOT EXISTS 'analise_app'@'%' IDENTIFIED BY 'troque_esta_senha';
+GRANT ALL PRIVILEGES ON analise_performance.* TO 'analise_app'@'%';
+FLUSH PRIVILEGES;
 
 USE analise_performance;
 

@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Análise de Performance - Frota</title>
-  <link rel="stylesheet" href="index.css?v=20260514-01">
+  <link rel="stylesheet" href="index.css?v=20260515-13">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="comum.js?v=20260514-06" defer></script>
-  <script src="index.js?v=20260513-10" defer></script>
+<script src="comum.js?v=20260515-04" defer></script>
+  <script src="index.js?v=20260515-11" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -36,6 +36,8 @@
   </div>
 
   <main class="page">
+    <input type="hidden" id="edit-id">
+
     <section class="card">
       <div class="card-header">
         <span class="card-title">Identificacao do Veiculo</span>
@@ -213,18 +215,6 @@
       </div>
       <div class="mech-grid" id="mech-grid"></div>
       <div class="mech-total" id="mech-total"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <span class="card-title">Observacoes e Diagnostico</span>
-        <button class="btn btn-sm btn-green" type="button" onclick="salvarRegistro()">Salvar no Historico</button>
-      </div>
-      <div class="field spaced">
-        <label for="obs-texto">Observacoes / Diagnostico</label>
-        <textarea id="obs-texto" placeholder="Registre analises, diagnosticos, acoes tomadas..."></textarea>
-      </div>
-      <input type="hidden" id="edit-id">
     </section>
 
     <section class="card">

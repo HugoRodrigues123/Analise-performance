@@ -17,6 +17,7 @@ const PUBLIC_DIR = __dirname;
 const DATA_FILE = path.join(__dirname, "analise_performance_store.json");
 const DB_DIALECT = String(process.env.DB_DIALECT || "mysql").toLowerCase();
 const DB_NAME = process.env.DB_NAME || "analise_performance";
+const DB_REQUIRE_MYSQL = String(process.env.DB_REQUIRE_MYSQL || "false").toLowerCase() === "true";
 
 const STORAGE_KEY = "simHistorico";
 const MULTAS_KEY = "simMultas";
@@ -233,7 +234,9 @@ async function migrarJsonParaMysqlSeNecessario() {
 
 async function lerBancoPersistente() {
   const bancoMysql = await lerBancoMysql();
-  return bancoMysql || lerBancoJson();
+  if (bancoMysql) return bancoMysql;
+  if (DB_REQUIRE_MYSQL) throw new Error(`${mysqlStatus.message}. O fallback JSON está desativado por DB_REQUIRE_MYSQL=true.`);
+  return lerBancoJson();
 }
 
 async function salvarPayloadPersistente(payload) {
@@ -244,6 +247,7 @@ async function salvarPayloadPersistente(payload) {
 
   const salvoMysql = await salvarBancoMysqlParcial(dadosNormalizados);
   if (salvoMysql) return { ok: true, database: "mysql" };
+  if (DB_REQUIRE_MYSQL) throw new Error(`${mysqlStatus.message}. O fallback JSON está desativado por DB_REQUIRE_MYSQL=true.`);
 
   const banco = lerBancoJson();
   Object.assign(banco, dadosNormalizados);
@@ -324,7 +328,8 @@ async function tratarApi(req, res, pathname) {
       ok: true,
       database: mysqlStatus.ok ? "mysql" : "json",
       mysql: mysqlStatus,
-      jsonFallback: DATA_FILE
+      requireMysql: DB_REQUIRE_MYSQL,
+      jsonFallback: DB_REQUIRE_MYSQL ? null : DATA_FILE
     });
     return true;
   }

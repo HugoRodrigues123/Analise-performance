@@ -1,4 +1,4 @@
-@import url("./style.css?v=20260514-09");
+@import url("./style.css?v=20260515-13");
 
 .equipamentos-page {
   max-width: 1480px;
@@ -87,6 +87,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+
+
+
+
+
 
 
 

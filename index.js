@@ -547,7 +547,7 @@ function salvarRegistro() {
   const dataISO = document.getElementById("obs-data").value || isoHoje();
   const motorista = document.getElementById("motorista-cadastro").value.trim();
   const placa = document.getElementById("placa-cadastro").value.trim().toUpperCase();
-  const obs = document.getElementById("obs-texto").value.trim();
+  const obs = document.getElementById("obs-texto")?.value.trim() || "";
   const editId = document.getElementById("edit-id").value;
 
   salvarRegistroPerformance(r, { motorista, placa, data: dataISO, obs, editId });
@@ -632,7 +632,8 @@ function editarRegistro(idx) {
   document.getElementById("motorista-cadastro").value = r.motorista;
   document.getElementById("placa-cadastro").value = r.placa;
   document.getElementById("obs-data").value = r.data;
-  document.getElementById("obs-texto").value = r.obs;
+  const obsTexto = document.getElementById("obs-texto");
+  if (obsTexto) obsTexto.value = r.obs || "";
   document.getElementById("edit-id").value = r.id;
 
   PROBLEMAS.forEach(p => {
@@ -652,7 +653,8 @@ function limparFormulario() {
   if (condicaoCarga) condicaoCarga.value = "Carregado";
   document.getElementById("motorista-cadastro").value = "";
   document.getElementById("placa-cadastro").value = "";
-  document.getElementById("obs-texto").value = "";
+  const obsTexto = document.getElementById("obs-texto");
+  if (obsTexto) obsTexto.value = "";
   document.getElementById("edit-id").value = "";
   PROBLEMAS.forEach(p => {
     const cb = document.getElementById("m_" + p.id);

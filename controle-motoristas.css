@@ -1,4 +1,4 @@
-@import url("./style.css?v=20260514-09");
+@import url("./style.css?v=20260515-13");
 
 .controle-motoristas-page {
   min-height: calc(100vh - 52px);
@@ -173,6 +173,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+
+
+
+
+
 
 
 

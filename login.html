@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Análise de Performance</title>
+  <link rel="stylesheet" href="login.css?v=20260515-13">
+  <script src="comum.js?v=20260515-04" defer></script>
+  <script src="login.js?v=20260515-03" defer></script>
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="login-brand">
+        <div class="login-icon" aria-hidden="true">&lt;/&gt;</div>
+        <div>
+          <h1 id="login-title">Performance</h1>
+          <p>Entre para acessar os controles da frota.</p>
+        </div>
+      </div>
+
+      <form id="login-form" class="login-form">
+        <div class="field">
+          <label for="login-usuario">Usuário</label>
+          <input type="text" id="login-usuario" autocomplete="username" placeholder="Digite seu usuário" required>
+        </div>
+        <div class="field">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" autocomplete="current-password" placeholder="Digite sua senha" required>
+        </div>
+        <div id="login-erro" class="login-error" role="alert"></div>
+        <button class="btn btn-green login-submit" type="submit">Entrar</button>
+        <div class="login-links">
+          <a href="cadastro-usuario.html">Cadastre-se</a>
+          <button type="button" onclick="recuperarSenhaLogin()">Esqueci minha senha</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastre-se - Análise de Performance</title>
+  <link rel="stylesheet" href="login.css?v=20260515-13">
+  <script src="comum.js?v=20260515-04" defer></script>
+  <script src="cadastro-usuario.js?v=20260515-01" defer></script>
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-card" aria-labelledby="cadastro-title">
+      <div class="login-brand">
+        <div class="login-icon" aria-hidden="true">&lt;/&gt;</div>
+        <div>
+          <h1 id="cadastro-title">Cadastre-se</h1>
+          <p>Informe seus dados para criar o acesso ao sistema.</p>
+        </div>
+      </div>
+
+      <form id="cadastro-usuario-form" class="login-form">
+        <div class="field">
+          <label for="cadastro-nome">Nome</label>
+          <input type="text" id="cadastro-nome" autocomplete="name" placeholder="Digite seu nome" required>
+        </div>
+        <div class="field">
+          <label for="cadastro-email">E-mail</label>
+          <input type="email" id="cadastro-email" autocomplete="email" placeholder="Digite seu e-mail" required>
+        </div>
+        <div id="cadastro-erro" class="login-error" role="alert"></div>
+        <button class="btn btn-green login-submit" type="submit">Completar cadastro</button>
+        <div class="login-links">
+          <a href="login.html">Voltar para login</a>
+        </div>
+        <div class="login-note">Após o cadastro, use seu e-mail como usuário e a senha padrão 1234.</div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

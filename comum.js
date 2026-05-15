@@ -47,6 +47,11 @@ const DIAGNOSTICOS_KEY = "simDiagnosticosImportados";
 const FICHAS_KEY = "simControleFichas";
 const TELEMETRIA_KEY = "simTelemetria";
 const PLANEJAMENTOS_KEY = "simPlanejamentos";
+const AUTH_SESSION_KEY = "analisePerformanceAuth";
+const USUARIOS_ACESSO_KEY = "simUsuariosAcesso";
+const LOGIN_USUARIOS = [
+  { usuario: "admin", senha: "1234", nome: "Administrador" }
+];
 const BACKUP_KEYS = [STORAGE_KEY, MULTAS_KEY, ADVERTENCIAS_KEY, AVARIAS_KEY, OCORRENCIAS_KEY, MOTORISTAS_KEY, MOTORISTAS_STATUS_KEY, PARTICIPANTES_KEY, VEICULOS_KEY, TRAJETOS_KEY, DIAGNOSTICOS_KEY, FICHAS_KEY, TELEMETRIA_KEY, PLANEJAMENTOS_KEY];
 const PESOS_RANKING_MOTORISTA = {
   consumo: 35,
@@ -112,14 +117,122 @@ const NOMES_GUIAS = {
   "advertencias.html": "Advertências e Suspensões",
   "registro-ocorrencia.html": "Registro de Ocorrência",
   "planejamentos.html": "Planejamentos",
-  "controle-telemetria.html": "Controle de Equipamentos"
+  "controle-telemetria.html": "Controle de Equipamentos",
+  "login.html": "Login",
+  "cadastro-usuario.html": "Cadastre-se"
 };
 
 document.addEventListener("DOMContentLoaded", iniciarAplicacao);
 
 async function iniciarAplicacao() {
+  const paginaPublica = paginaPublicaAutenticacao();
+  if (!paginaPublica && !usuarioAutenticado()) {
+    window.location.replace("login.html");
+    return;
+  }
+  if (paginaPublica) {
+    if (usuarioAutenticado()) {
+      window.location.replace("index.html");
+      return;
+    }
+    requestAnimationFrame(() => document.body.classList.add("page-ready"));
+    return;
+  }
   instalarEfeitoRolagemCabecalho();
   await carregarDadosBanco();
+}
+
+function paginaAtualLogin() {
+  const arquivo = window.location.pathname.split("/").pop() || "index.html";
+  return arquivo.toLowerCase() === "login.html";
+}
+
+function paginaPublicaAutenticacao() {
+  const arquivo = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+  return arquivo === "login.html" || arquivo === "cadastro-usuario.html";
+}
+
+function usuarioAutenticado() {
+  try {
+    const sessao = JSON.parse(sessionStorage.getItem(AUTH_SESSION_KEY) || "null");
+    return Boolean(sessao && sessao.usuario && sessao.autenticadoEm);
+  } catch {
+    return false;
+  }
+}
+
+function obterUsuarioSessao() {
+  try {
+    return JSON.parse(sessionStorage.getItem(AUTH_SESSION_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function efetuarLogin(usuario, senha) {
+  const usuarioLimpo = String(usuario || "").trim();
+  const senhaLimpa = String(senha || "").trim();
+  const usuariosCadastrados = getUsuariosAcesso();
+  const encontrado = [...LOGIN_USUARIOS, ...usuariosCadastrados].find((item) =>
+    item.usuario.toLowerCase() === usuarioLimpo.toLowerCase() && item.senha === senhaLimpa
+  );
+  if (!encontrado) return false;
+
+  sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+    usuario: encontrado.usuario,
+    nome: encontrado.nome,
+    autenticadoEm: new Date().toISOString()
+  }));
+  return true;
+}
+
+function getUsuariosAcesso() {
+  try {
+    return JSON.parse(localStorage.getItem(USUARIOS_ACESSO_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function salvarUsuarioAcesso(nome, email) {
+  const nomeLimpo = String(nome || "").trim();
+  const emailLimpo = String(email || "").trim().toLowerCase();
+  if (!nomeLimpo || !emailLimpo) return { ok: false, mensagem: "Informe nome e e-mail para concluir o cadastro." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpo)) return { ok: false, mensagem: "Informe um e-mail válido." };
+
+  const usuarios = getUsuariosAcesso();
+  const existe = [...LOGIN_USUARIOS, ...usuarios].some((item) => item.usuario.toLowerCase() === emailLimpo);
+  if (existe) return { ok: false, mensagem: "Este e-mail já está cadastrado." };
+
+  usuarios.push({
+    id: `USR-${Date.now()}`,
+    nome: nomeLimpo,
+    email: emailLimpo,
+    usuario: emailLimpo,
+    senha: "1234",
+    criadoEm: new Date().toISOString()
+  });
+  localStorage.setItem(USUARIOS_ACESSO_KEY, JSON.stringify(usuarios));
+  return { ok: true, mensagem: "Cadastro concluído. Use seu e-mail como usuário e a senha padrão 1234." };
+}
+
+function sairSistema() {
+  sessionStorage.removeItem(AUTH_SESSION_KEY);
+  window.location.href = "login.html";
+}
+
+function instalarBotaoSair() {
+  const actions = document.querySelector(".topbar-actions");
+  if (!actions || document.getElementById("logout-btn")) return;
+  const usuario = obterUsuarioSessao();
+  const btn = document.createElement("button");
+  btn.id = "logout-btn";
+  btn.className = "btn btn-sm logout-btn";
+  btn.type = "button";
+  btn.title = usuario?.nome ? `Sessão: ${usuario.nome}` : "Sair";
+  btn.textContent = "Sair";
+  btn.addEventListener("click", sairSistema);
+  actions.appendChild(btn);
 }
 
 function instalarEfeitoRolagemCabecalho() {
@@ -132,6 +245,8 @@ function instalarEfeitoRolagemCabecalho() {
 
 // Funções compartilhadas
 function instalarTransicaoNavegacao() {
+  if (!paginaPublicaAutenticacao() && !usuarioAutenticado()) return;
+  if (!paginaPublicaAutenticacao()) instalarBotaoSair();
   if (!document.getElementById("page-transition")) {
     const overlay = document.createElement("div");
     overlay.id = "page-transition";
@@ -716,6 +831,7 @@ function atualizarInterfacesCompartilhadas() {
   if (typeof preencherFiltrosControleFrota === "function") preencherFiltrosControleFrota();
   if (typeof renderizarSituacaoVeiculos === "function") renderizarSituacaoVeiculos();
   if (typeof recarregarPlanejamentos === "function") recarregarPlanejamentos();
+  if (typeof recarregarDiagnostico === "function") recarregarDiagnostico();
 }
 
 function selecionarMotoristaNaTela(nome) {

@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Diagnóstico - Frota</title>
-  <link rel="stylesheet" href="ofensores.css?v=20260514-01">
-  <script src="comum.js?v=20260514-06" defer></script>
-  <script src="ofensores.js?v=20260513-02" defer></script>
+  <link rel="stylesheet" href="ofensores.css?v=20260515-13">
+  <script src="comum.js?v=20260515-04" defer></script>
+  <script src="ofensores.js?v=20260515-03" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -59,11 +59,31 @@
           <label for="diag-placa">Placa</label>
           <select id="diag-placa" onchange="atualizarDiagnostico()"></select>
         </div>
+        <div class="field">
+          <label for="diag-fabricante">Fabricante</label>
+          <select id="diag-fabricante" onchange="atualizarDiagnostico()"></select>
+        </div>
+        <div class="field">
+          <label for="diag-modelo">Modelo</label>
+          <select id="diag-modelo" onchange="atualizarDiagnostico()"></select>
+        </div>
+        <div class="field">
+          <label for="diag-tracao">Tração</label>
+          <select id="diag-tracao" onchange="atualizarDiagnostico()"></select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn btn-sm" type="button" onclick="limparFiltrosDiagnostico()">Limpar filtros</button>
+        </div>
       </div>
 
       <div class="dashboard-grid kpis spaced">
         <div class="metric-card">
-          <div class="metric-lbl">Média geral</div>
+          <div class="metric-lbl">Média geral da frota</div>
+          <div class="metric-val"><span id="diag-media-empresa">—</span><span class="metric-unit"> km/L</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Média filtrada</div>
           <div class="metric-val"><span id="diag-media-geral">—</span><span class="metric-unit"> km/L</span></div>
         </div>
         <div class="metric-card">
@@ -77,6 +97,51 @@
         <div class="metric-card">
           <div class="metric-lbl">Registros analisados</div>
           <div class="metric-val"><span id="diag-total-registros">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Análise crítica da média</span>
+      </div>
+      <div id="diag-analise-critica" class="critical-summary"></div>
+      <div class="diagnostic-grid impact-grid">
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Condutores que puxam para baixo</span></div>
+          <div id="diag-impacto-motorista" class="impact-list"></div>
+        </div>
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Veículos que puxam para baixo</span></div>
+          <div id="diag-impacto-veiculo" class="impact-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">Médias por grupo</span>
+      </div>
+      <div class="diagnostic-grid">
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Por veículo</span></div>
+          <div id="diag-por-placa" class="diagnostic-list"></div>
+        </div>
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Por motorista</span></div>
+          <div id="diag-por-motorista" class="diagnostic-list"></div>
+        </div>
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Por fabricante</span></div>
+          <div id="diag-por-fabricante" class="diagnostic-list"></div>
+        </div>
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Por modelo</span></div>
+          <div id="diag-por-modelo" class="diagnostic-list"></div>
+        </div>
+        <div class="diagnostic-panel">
+          <div class="card-header"><span class="card-title">Por tração</span></div>
+          <div id="diag-por-tracao" class="diagnostic-list"></div>
         </div>
       </div>
     </section>
